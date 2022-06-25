@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "984896717135",
+    "project_id": "flutter-myfitexercisecompanion",
+    "storage_bucket": "flutter-myfitexercisecompanion.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984896717135:android:a6fa9237fb28e2c6f1c53a",
+        "android_client_info": {
+          "package_name": "com.example.flutter_myfitexercisecompanion"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "984896717135-ps1d079tfh5sv6tr8k51idi0doq3c6sg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKU6zxin48pmm0QAy87K6QbQKN3N6nWGQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "984896717135-ps1d079tfh5sv6tr8k51idi0doq3c6sg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
