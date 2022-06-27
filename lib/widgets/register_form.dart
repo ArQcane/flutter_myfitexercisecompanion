@@ -54,57 +54,81 @@ class _RegisterFormState extends State<RegisterForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextFormField(
-            decoration: InputDecoration(label: Text('Email')),
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null)
-                return "Please provide an email address.";
-              else if (!value.contains('@'))
-                return "Please provide a valid email address.";
-              else
-                return null;
-            },
-            onSaved: (value) {
-              email = value;
-            },
+          Image.asset('images/fit_running_logo_template_transparent.png', height: 300, width: 300,),
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: TextFormField(
+              decoration: InputDecoration(label: Text('Email'),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              icon: Icon(Icons.email)),
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null)
+                  return "Please provide an email address.";
+                else if (!value.contains('@'))
+                  return "Please provide a valid email address.";
+                else
+                  return null;
+              },
+              onSaved: (value) {
+                email = value;
+              },
+            ),
           ),
-          TextFormField(
-            decoration: InputDecoration(label: Text('Password')),
-            obscureText: true,
-            validator: (value) {
-              if (value == null)
-                return 'Please provide a password.';
-              else if (value.length < 6)
-                return 'Password must be at least 6 characters.';
-              else
-                return null;
-            },
-            onSaved: (value) {
-              password = value;
-            },
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: TextFormField(
+              decoration: InputDecoration(label: Text('Password'),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15)
+              ),
+              icon: Icon(Icons.password),),
+              obscureText: true,
+              validator: (value) {
+                if (value == null)
+                  return 'Please provide a password.';
+                else if (value.length < 6)
+                  return 'Password must be at least 6 characters.';
+                else
+                  return null;
+              },
+              onSaved: (value) {
+                password = value;
+              },
+            ),
           ),
-          TextFormField(
-            decoration: InputDecoration(label: Text('Confirm Password')),
-            obscureText: true,
-            validator: (value) {
-              if (value == null)
-                return 'Please provide a password.';
-              else if (value.length < 6)
-                return 'Password must be at least 6 characters.';
-              else
-                return null;
-            },
-            onSaved: (value) {
-              confirmPassword = value;
-            },
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: TextFormField(
+              decoration: InputDecoration(label: Text('Confirm Password'),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              icon: Icon(Icons.checklist_rtl_outlined)),
+              obscureText: true,
+              validator: (value) {
+                if (value == null)
+                  return 'Please provide a password.';
+                else if (value.length < 6)
+                  return 'Password must be at least 6 characters.';
+                else
+                  return null;
+              },
+              onSaved: (value) {
+                confirmPassword = value;
+              },
+            ),
           ),
           SizedBox(height: 20),
-          ElevatedButton(
+          ElevatedButton.icon(
               onPressed: () {
                 register();
               },
-              child: Text('Register')),
+              icon: Icon(Icons.app_registration),
+              label: Text('Register'),
+          ),
         ],
       ),
     );
