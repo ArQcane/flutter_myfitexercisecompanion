@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_myfitexercisecompanion/db/run_session_dao.dart';
-import 'package:flutter_myfitexercisecompanion/db/run_session_database.dart';
 import 'package:flutter_myfitexercisecompanion/screens/calorie_counter_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/home_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/profile_screen.dart';
@@ -15,21 +13,12 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final database = await $FloorRunSessionDatabase.databaseBuilder('run_session_database.db').build();
-
-  final runSessionDao = database.runSessionDao;
   await Firebase.initializeApp();
-  runApp(MyApp(runSessionDao));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   AuthService authService = AuthService();
-
-  final RunSessionDao dao;
-
-  MyApp(this.dao);
-
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -42,8 +31,8 @@ class MyApp extends StatelessWidget {
                     home: snapshot.connectionState == ConnectionState.waiting
                         ? Center(child: CircularProgressIndicator())
                         : snapshot.hasData
-                            ? NavigationBar(dao)
-                            : MainScreen(dao),
+                            ? NavigationBar()
+                            : MainScreen(),
                     routes: {
                       ResetPasswordScreen.routeName: (_) {
                         return ResetPasswordScreen();
@@ -67,9 +56,6 @@ class MyApp extends StatelessWidget {
 }
 
 class NavigationBar extends StatefulWidget {
-  final RunSessionDao dao;
-
-  NavigationBar(this.dao);
 
   @override
   State<NavigationBar> createState() => _NavigationBarState();
@@ -143,9 +129,6 @@ class _NavigationBarState extends State<NavigationBar> {
 
 class MainScreen extends StatefulWidget {
   static String routeName = '/';
-  final RunSessionDao dao;
-
-  MainScreen(this.dao);
 
   @override
   State<MainScreen> createState() => _MainScreenState();

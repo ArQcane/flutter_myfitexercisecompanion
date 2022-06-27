@@ -39,9 +39,6 @@ dependencies:
   #Firebase Database
   cloud_firestore: ^3.1.5
   google_nav_bar: ^5.0.6
-  #Room database equivalent
-  floor: ^1.3.0
-  sqflite: ^2.0.2+1
 
 
 
@@ -56,8 +53,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   flutter_native_splash: ^2.2.3+1
-  floor_generator: ^1.3.0
-  build_runner: ^2.1.2
 
 flutter_native_splash:
   color: "#FFFFFF"
