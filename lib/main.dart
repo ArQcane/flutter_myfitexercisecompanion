@@ -5,7 +5,10 @@ import 'package:flutter_myfitexercisecompanion/screens/calorie_counter_screen.da
 import 'package:flutter_myfitexercisecompanion/screens/home_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/profile_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/run_tracker_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/user_add_details_screen.dart';
 import 'package:flutter_myfitexercisecompanion/services/auth_service.dart';
+import 'package:flutter_myfitexercisecompanion/services/firestore_service.dart';
+import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/login_form.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/register_form.dart';
 import 'package:flutter_myfitexercisecompanion/screens/reset_password_screen.dart';
@@ -19,6 +22,7 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   AuthService authService = AuthService();
+  FirestoreService firestoreService = FirestoreService();
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -31,7 +35,7 @@ class MyApp extends StatelessWidget {
                     home: snapshot.connectionState == ConnectionState.waiting
                         ? Center(child: CircularProgressIndicator())
                         : snapshot.hasData
-                            ? NavigationBar()
+                            ? UserAddDetailsScreen()
                             : MainScreen(),
                     routes: {
                       ResetPasswordScreen.routeName: (_) {
@@ -49,83 +53,17 @@ class MyApp extends StatelessWidget {
                       ProfileScreen.routeName: (_) {
                         return ProfileScreen();
                       },
+                      UserAddDetailsScreen.routeName: (_) {
+                        return UserAddDetailsScreen();
+                      },
+                      BottomNavBar.routeName: (_) {
+                        return BottomNavBar();
+                      }
                     });
               },
     );
   }
 }
-
-class NavigationBar extends StatefulWidget {
-
-  @override
-  State<NavigationBar> createState() => _NavigationBarState();
-}
-
-class _NavigationBarState extends State<NavigationBar> {
-  int selectedIndex =  0;
-  AuthService authService = AuthService();
-
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  late User? currentUser;
-
-  @override
-  void initState(){
-    super.initState();
-    final User? user = auth.currentUser;
-    final uid = user?.uid;
-    currentUser = user;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: selectedIndex == 0 ? Text('Home') :
-          selectedIndex == 1 ? Text('Run Tracking') :
-          selectedIndex == 2 ? Text('Calories Counter') :
-          Text('Profile'),
-        ),
-        bottomNavigationBar: Container(
-          color: Colors.blueGrey.shade900,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal:15.0,
-                vertical: 7.0),
-            child: GNav(
-              backgroundColor: Colors.blueGrey.shade900,
-              color: Colors.white,
-              activeColor: Colors.white,
-              tabBackgroundColor: Colors.orange.shade800,
-              gap: 8,
-              onTabChange: (index){
-                setState(() {
-                  selectedIndex = index;
-                });
-              },
-              padding: EdgeInsets.all(16),
-              tabs: const[
-                GButton(
-                  icon: Icons.home,
-                  text: 'Home',),
-                GButton(icon: Icons.run_circle,
-                  text: 'Run Tracker',),
-                GButton(icon: Icons.no_food,
-                  text: 'Calories',),
-                GButton(icon: Icons.person,
-                  text: 'Profile',),
-              ],
-            ),
-          ),
-        ),
-
-        body: Center(
-          child: selectedIndex == 0 ? HomeScreen(currentUser!) :
-          selectedIndex ==   1 ? RunTrackerScreen() :
-          selectedIndex == 2 ? CalorieCounterScreen() :
-          ProfileScreen(),
-        ));
-  }
-}
-
 
 class MainScreen extends StatefulWidget {
   static String routeName = '/';

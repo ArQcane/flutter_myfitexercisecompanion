@@ -1,9 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_myfitexercisecompanion/screens/calorie_counter_screen.dart';
-import 'package:flutter_myfitexercisecompanion/screens/profile_screen.dart';
-import 'package:flutter_myfitexercisecompanion/screens/run_tracker_screen.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:flutter_myfitexercisecompanion/main.dart';
 
 import '../services/auth_service.dart';
 
@@ -29,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Logout successfully!'),
       ));
+      Navigator.pushReplacementNamed(context, MainScreen.routeName);
     }).catchError((error) {
       FocusScope.of(context).unfocus();
       String message = error.toString();
