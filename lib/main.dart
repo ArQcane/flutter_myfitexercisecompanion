@@ -23,44 +23,48 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   AuthService authService = AuthService();
   FirestoreService firestoreService = FirestoreService();
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-              stream: authService.getAuthUser(),
-              builder: (context, snapshot) {
-                return MaterialApp(
-                    theme: ThemeData(
-                      primarySwatch: Colors.deepOrange,
-                    ),
-                    home: snapshot.connectionState == ConnectionState.waiting
-                        ? Center(child: CircularProgressIndicator())
-                        : snapshot.hasData
-                            ? UserAddDetailsScreen()
-                            : MainScreen(),
-                    routes: {
-                      ResetPasswordScreen.routeName: (_) {
-                        return ResetPasswordScreen();
-                      },
-                      HomeScreen.routeName: (_) {
-                        return HomeScreen(snapshot.data as  User);
-                      },
-                      RunTrackerScreen.routeName: (_) {
-                        return RunTrackerScreen();
-                      },
-                      CalorieCounterScreen.routeName: (_) {
-                        return CalorieCounterScreen();
-                      },
-                      ProfileScreen.routeName: (_) {
-                        return ProfileScreen();
-                      },
-                      UserAddDetailsScreen.routeName: (_) {
-                        return UserAddDetailsScreen();
-                      },
-                      BottomNavBar.routeName: (_) {
-                        return BottomNavBar();
-                      }
-                    });
-              },
+    return FutureBuilder(
+      future: Firebase.initializeApp(),
+      builder: (ctx, snapshot) => StreamBuilder<User?>(
+        stream: authService.getAuthUser(),
+        builder: (context, snapshot) {
+          return MaterialApp(
+              theme: ThemeData(
+                primarySwatch: Colors.deepOrange,
+              ),
+              home: snapshot.connectionState == ConnectionState.waiting
+                  ? Center(child: CircularProgressIndicator())
+                  : snapshot.hasData
+                      ? UserAddDetailsScreen()
+                      : MainScreen(),
+              routes: {
+                ResetPasswordScreen.routeName: (_) {
+                  return ResetPasswordScreen();
+                },
+                HomeScreen.routeName: (_) {
+                  return HomeScreen(snapshot.data as User);
+                },
+                RunTrackerScreen.routeName: (_) {
+                  return RunTrackerScreen();
+                },
+                CalorieCounterScreen.routeName: (_) {
+                  return CalorieCounterScreen();
+                },
+                ProfileScreen.routeName: (_) {
+                  return ProfileScreen();
+                },
+                UserAddDetailsScreen.routeName: (_) {
+                  return UserAddDetailsScreen();
+                },
+                BottomNavBar.routeName: (_) {
+                  return BottomNavBar();
+                }
+              });
+        },
+      ),
     );
   }
 }

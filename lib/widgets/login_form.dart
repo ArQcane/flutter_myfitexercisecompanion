@@ -16,12 +16,6 @@ class _LoginFormState extends State<LoginForm> {
     bool isValid = form.currentState!.validate();
     if (isValid) {
       form.currentState!.save();
-      FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('User Registered successfully!'),
-      ));
-
       AuthService authService = AuthService();
       return authService.login(email, password).then((value) {
         FocusScope.of(context).unfocus();
@@ -47,16 +41,18 @@ class _LoginFormState extends State<LoginForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Image.asset("images/fit_running_logo_template_transparent.png",
-          height: 300,
-          width: 300,),
+          Image.asset(
+            "images/fit_running_logo_template_transparent.png",
+            height: 300,
+            width: 300,
+          ),
           Padding(
             padding: EdgeInsets.all(10),
             child: TextFormField(
-              decoration: InputDecoration(label: Text('Email'),
+              decoration: InputDecoration(
+                  label: Text('Email'),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15)
-                  ),
+                      borderRadius: BorderRadius.circular(15)),
                   icon: Icon(Icons.email)),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
@@ -75,11 +71,11 @@ class _LoginFormState extends State<LoginForm> {
           Padding(
             padding: EdgeInsets.all(10),
             child: TextFormField(
-              decoration: InputDecoration(label: Text('Password'),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15)
-              ),
-              icon: Icon(Icons.password)),
+              decoration: InputDecoration(
+                  label: Text('Password'),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                  icon: Icon(Icons.password)),
               obscureText: true,
               validator: (value) {
                 if (value == null)
@@ -96,11 +92,11 @@ class _LoginFormState extends State<LoginForm> {
           ),
           SizedBox(height: 20),
           ElevatedButton.icon(
-              onPressed: () {
-                login();
-              },
-              icon: Icon(Icons.login),
-              label: Text('Login'),
+            onPressed: () {
+              login();
+            },
+            icon: Icon(Icons.login),
+            label: Text('Login'),
           ),
         ],
       ),

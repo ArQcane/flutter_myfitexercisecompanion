@@ -6,12 +6,13 @@ import '../models/user.dart';
 class FirestoreService{
   AuthService authService = AuthService();
 
-  Future<void> addUser(email, username, weight, height) {
+  Future<void> addUser(email, profilePic, username, height, weight) {
     return FirebaseFirestore.instance.collection('users').doc(email).set({
       'userEmail': email,
+      'profilePic': profilePic,
       'username': username,
-      'weight': weight,
-      'height': height
+      'height': height,
+      'weight': weight
     });
   }
 
@@ -25,12 +26,13 @@ class FirestoreService{
     return null;
   }
 
-  Future<void> updateCurrentFirestoreUser(email, username, weight, height){
+  Future<void> updateCurrentFirestoreUser(email, profilePic, username, height, weight){
     return FirebaseFirestore.instance.collection('users').doc(email).update(
         {'userEmail': email,
+          'profilePic': profilePic,
           'username': username,
-          'weight': weight,
-          'height': height
+          'height': height,
+          'weight': weight
         }).then((value) => print('User Updated'))
         .catchError((onError) => print('Failed to update user: $onError'));
   }
