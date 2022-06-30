@@ -10,11 +10,16 @@ class RunTrackerScreen extends StatefulWidget {
 class _RunTrackerScreenState extends State<RunTrackerScreen> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Run Tracker')
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Run tracker"),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('Run Tracker')
+        ],
+      ),
     );
   }
 }

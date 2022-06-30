@@ -11,6 +11,9 @@ import '../services/auth_service.dart';
 class BottomNavBar extends StatefulWidget {
   static String routeName = '/navigation-bar';
 
+  User currentUser;
+  BottomNavBar(this.currentUser);
+
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
@@ -21,30 +24,15 @@ class _BottomNavBarState extends State<BottomNavBar> {
   AuthService authService = AuthService();
 
   final FirebaseAuth auth = FirebaseAuth.instance;
-  late User? currentUser;
-
-  @override
-  void initState(){
-    super.initState();
-    final User? user = auth.currentUser;
-    final uid = user?.uid;
-    currentUser = user;
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: selectedIndex == 0 ? Text('Home') :
-          selectedIndex == 1 ? Text('Run Tracking') :
-          selectedIndex == 2 ? Text('Calories Counter') :
-          Text('Profile'),
-        ),
         bottomNavigationBar: Container(
           color: Colors.blueGrey.shade900,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal:15.0,
-                vertical: 7.0),
+            padding: EdgeInsets.symmetric(horizontal:10.0,
+                vertical: 5.0),
             child: GNav(
               backgroundColor: Colors.blueGrey.shade900,
               color: Colors.white,
@@ -73,10 +61,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
 
         body: Center(
-          child: selectedIndex == 0 ? HomeScreen(currentUser!) :
+          child: selectedIndex == 0 ? HomeScreen() :
           selectedIndex ==   1 ? RunTrackerScreen() :
           selectedIndex == 2 ? CalorieCounterScreen() :
-          ProfileScreen(),
+          ProfileScreen(widget.currentUser),
         ));
   }
 }

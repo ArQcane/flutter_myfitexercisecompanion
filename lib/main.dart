@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/screens/calorie_counter_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/edit_profile_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/home_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/profile_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/run_tracker_screen.dart';
@@ -12,7 +13,6 @@ import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/login_form.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/register_form.dart';
 import 'package:flutter_myfitexercisecompanion/screens/reset_password_screen.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
                   return ResetPasswordScreen();
                 },
                 HomeScreen.routeName: (_) {
-                  return HomeScreen(snapshot.data as User);
+                  return HomeScreen();
                 },
                 RunTrackerScreen.routeName: (_) {
                   return RunTrackerScreen();
@@ -54,13 +54,16 @@ class MyApp extends StatelessWidget {
                   return CalorieCounterScreen();
                 },
                 ProfileScreen.routeName: (_) {
-                  return ProfileScreen();
+                  return ProfileScreen(snapshot.data as User);
                 },
                 UserAddDetailsScreen.routeName: (_) {
                   return UserAddDetailsScreen();
                 },
                 BottomNavBar.routeName: (_) {
-                  return BottomNavBar();
+                  return BottomNavBar(snapshot.data as User);
+                },
+                EditProfileScreen.routeName: (_){
+                  return EditProfileScreen();
                 }
               });
         },

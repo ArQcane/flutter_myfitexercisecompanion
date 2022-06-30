@@ -1,11 +1,11 @@
-class User {
+class UserDetail {
   String email;
   String profilePic;
   String username;
-  int weight;
-  int height;
+  double weight;
+  double height;
 
-  User({
+  UserDetail({
     required this.email,
     required this.profilePic,
     required this.username,
@@ -13,9 +13,8 @@ class User {
     required this.height
   });
 
-  User.fromMap(Map<String, dynamic> snapshot, String id)
-      :
-        email =  snapshot['email'] ?? '',
+  UserDetail.fromMap(Map<String, dynamic> snapshot) :
+        email =  snapshot['userEmail'] ?? '',
         profilePic = snapshot['profilePic'] ?? '',
         username = snapshot['username'] ?? '',
         weight = snapshot['weight'] ?? '',

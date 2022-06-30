@@ -30,7 +30,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
 
   double? weight;
 
-  String profilePic = " ";
+  String profilePic = "";
 
   late User? currentLoggedInFirebaseUser;
 
@@ -43,7 +43,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
 
     Reference ref = FirebaseStorage.instance
         .ref()
-        .child("${authService.getCurrentUser()!.email}_profilepic.png");
+        .child("${authService.getCurrentUser()?.uid}_profilepic");
 
     await ref.putFile(File(image!.path));
     ref.getDownloadURL().then((value) {
@@ -56,7 +56,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
   void saveForm() {
     bool isValid = form.currentState!.validate();
 
-    if (profilePic == " ") {
+    if (profilePic == "") {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Please include a profile picture!'),
@@ -102,7 +102,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
             );
           }
           if (ss.hasData) {
-            return BottomNavBar();
+            return BottomNavBar(authService.getCurrentUser()!);
           }
           return Scaffold(
             appBar: AppBar(
@@ -134,7 +134,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
                             borderRadius: BorderRadius.all(Radius.circular(20)),
                             color: Colors.greenAccent),
                         child: Center(
-                          child: profilePic == " "
+                          child: profilePic == ""
                               ? const Icon(
                                   Icons.person,
                                   size: 80,

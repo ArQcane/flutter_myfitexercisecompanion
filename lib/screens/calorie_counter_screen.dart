@@ -10,11 +10,16 @@ class CalorieCounterScreen extends StatefulWidget {
 class _CalorieCounterScreenState extends State<CalorieCounterScreen> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Calories')
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Calorie Counter"),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('Calories')
+        ],
+      ),
     );
   }
 }
