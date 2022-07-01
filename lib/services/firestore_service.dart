@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_myfitexercisecompanion/services/auth_service.dart';
 
 import '../models/user.dart';
@@ -34,7 +35,7 @@ class FirestoreService {
       return currentUser;
   }
 
-  updateCurrentFirestoreUser(
+  Future<void> updateCurrentFirestoreUser(
       email, profilePic, username, height, weight) {
     return FirebaseFirestore.instance
         .collection('users')
@@ -57,5 +58,9 @@ class FirestoreService {
         .delete()
         .then((value) => print('User Deleted'))
         .catchError((onError) => print('Failed to delete user: $onError'));
+  }
+
+  Future deleteLoggedInUser(uid) {
+    return FirebaseFirestore.instance.collection('users').doc(uid).delete();
   }
 }

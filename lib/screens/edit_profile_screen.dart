@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/models/user.dart';
+import 'package:flutter_myfitexercisecompanion/screens/profile_screen.dart';
 import 'package:flutter_myfitexercisecompanion/services/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -26,6 +27,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? username;
   double? weight;
   double? height;
+  XFile? image;
+
 
   Future<void> pickUpLoadImage() async {
     final image = await ImagePicker().pickImage(
@@ -40,54 +43,59 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     await ref.putFile(File(image!.path));
     ref.getDownloadURL().then((value) {
-      if(value != '') {
-        setState(() {
-          profilePic = value;
-        });
-      }
+      setState(() {
+        profilePic = value;
+      });
     });
   }
 
-  void saveForm(String email) {
+  saveForm(String email) {
     bool isValid = form.currentState!.validate();
+
+
+    if (profilePic == "") {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Please include a profile picture!'),
+      ));
+      return;
+    }
 
     if (isValid) {
       form.currentState!.save();
 
       FirestoreService fsService = FirestoreService();
-      fsService.updateCurrentFirestoreUser(email, profilePic, username, height, weight);
+      print(profilePic);
 
-
-
-      FocusScope.of(context).unfocus();
-
-      if(profilePic == ''){
+      return fsService.updateCurrentFirestoreUser(
+          email, profilePic, username, height, weight).then((value) {
+        FocusScope.of(context).unfocus();
+        form.currentState!.reset();
+        Navigator.pushReplacementNamed(context, ProfileScreen.routeName);
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please add a valid profile picture'),
-          ),
-        );
-      }
-
-      form.currentState!.reset();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('User Profile editted successfully!'),
-        ),
-      );
+            SnackBar(content: Text('User Profile editted successfully!'),));
+      }).catchError((error) {
+        FocusScope.of(context).unfocus();
+        String message = error.toString();
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message),));
+      });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    UserDetail currentUser =
-        ModalRoute.of(context)?.settings.arguments as UserDetail;
+    @override
+    Widget build(BuildContext context) {
+      UserDetail currentUser =
+      ModalRoute
+          .of(context)
+          ?.settings
+          .arguments as UserDetail;
 
-    print(currentUser.email);
-    print(currentUser.profilePic);
-    print(currentUser.username);
-    print(currentUser.height);
-    print(currentUser.weight);
+      if(profilePic == ''){
+        profilePic = currentUser.profilePic;
+      }
 
       return Scaffold(
         appBar: AppBar(
@@ -122,7 +130,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   radius: 50,
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(50),
-                                    child: Image.network(currentUser.profilePic),
+                                    child: Image.network(profilePic),
                                   )
                               ),
                               Positioned(
@@ -131,23 +139,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: SizedBox(
                                   height: 46,
                                   width: 46,
-                                  child: GestureDetector(
-                                    onTap: () {
+                                  child: FlatButton(
+                                    padding: EdgeInsets.zero,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(50),
+                                        side: BorderSide(
+                                            color: Colors.orangeAccent)),
+                                    color: Color(0xFFF5F6F9),
+                                    onPressed: () {
                                       pickUpLoadImage();
                                     },
-                                    child: FlatButton(
-                                      padding: EdgeInsets.zero,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(50),
-                                          side: BorderSide(
-                                              color: Colors.orangeAccent)),
-                                      color: Color(0xFFF5F6F9),
-                                      onPressed: () {
-                                        pickUpLoadImage();
-                                      },
-                                      child: Icon(Icons.camera_alt),
-                                    ),
+                                    child: Icon(Icons.camera_alt),
                                   ),
                                 ),
                               ),
@@ -227,6 +230,5 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
       );
-  }
-
+    }
 }
