@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 class RunTrackerScreen extends StatefulWidget {
   static String routeName = "/runtracker";
@@ -13,97 +15,160 @@ class RunTrackerScreen extends StatefulWidget {
 }
 
 class _RunTrackerScreenState extends State<RunTrackerScreen> {
-  StreamSubscription? _locationSubscription;
-  GoogleMapController? _controller;
-  Location currentLocation = Location();
-  Set<Marker> _markers ={};
+  final Set<Polyline> polyline = {};
+  Location _location = Location();
+  GoogleMapController? _mapController;
+  LatLng _center = const LatLng(0, 0);
+  List<LatLng> route = [];
 
-  void getLocation() async{
-    var location = await currentLocation.getLocation();
+  double _dist = 0;
+  String? _displayTime;
+  int? _time;
+  int? _lastTime;
+  double _speed = 0;
+  double _avgSpeed = 0;
+  int _speedCounter = 0;
 
-    if(_locationSubscription != null){
-      _locationSubscription?.cancel();
-    }
-
-    _locationSubscription = currentLocation.onLocationChanged.listen((LocationData loc){
-      _controller?.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(
-        target: LatLng(loc.latitude ?? 0.0,loc.longitude?? 0.0),
-        zoom: 12.0,
-      )));
-      print(loc.latitude);
-      print(loc.longitude);
-    });
-  }
-
-  void getCurrentLocation() async {
-    try {
-      var location = await currentLocation.getLocation();
-
-      if (_locationSubscription != null) {
-        _locationSubscription!.cancel();
-      }
-
-
-      _locationSubscription = currentLocation.onLocationChanged.listen((newLocalData) {
-        if (_controller != null) {
-          _controller!.animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(
-              bearing: 192.8334901395799,
-              target: LatLng(newLocalData.latitude ?? 0.0, newLocalData.longitude ?? 0.0),
-              tilt: 0,
-              zoom: 18.00)));
-        }
-      });
-
-    } on PlatformException catch (e) {
-      if (e.code == 'PERMISSION_DENIED') {
-        debugPrint("Permission Denied");
-      }
-    }
-  }
+  final StopWatchTimer _stopWatchTimer = StopWatchTimer();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    getCurrentLocation();
+    _stopWatchTimer.onExecute.add(StopWatchExecute.start);
   }
 
   @override
-  void dispose() {
-    // TODO: implement dispose
+  void dispose() async {
     super.dispose();
-    if(_locationSubscription != null){
-      _locationSubscription?.cancel();
-    }
+    await _stopWatchTimer.dispose(); // Need to call dispose function.
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+      _mapController = controller;
+      double appendDist;
+
+      _location.onLocationChanged.listen((event) {
+        print("working");
+        LatLng loc = LatLng(event.latitude!, event.longitude!);
+        _mapController!.animateCamera(CameraUpdate.newCameraPosition(
+            CameraPosition(target: loc, zoom: 15)));
+
+        if (route.length > 0) {
+          appendDist = Geolocator.distanceBetween(route.last.latitude,
+              route.last.longitude, loc.latitude, loc.longitude);
+          _dist = _dist + appendDist;
+          int timeDuration = (_time! - _lastTime!);
+
+          if (_lastTime != null && timeDuration != 0) {
+            _speed = (appendDist / (timeDuration / 100)) * 3.6;
+            if (_speed != 0) {
+              _avgSpeed = _avgSpeed + _speed;
+              _speedCounter++;
+            }
+          }
+        }
+        _lastTime = _time;
+        route.add(loc);
+
+        polyline.add(Polyline(
+            polylineId: PolylineId(event.toString()),
+            visible: true,
+            points: route,
+            width: 5,
+            startCap: Cap.roundCap,
+            endCap: Cap.roundCap,
+            color: Colors.deepOrange));
+
+        setState(() {});
+      });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Map"),
-      ),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child:GoogleMap(
-          zoomControlsEnabled: false,
-          initialCameraPosition:CameraPosition(
-            target: LatLng(0.0 , 0.0),
-            zoom: 12.0,
-          ),
-          onMapCreated: (GoogleMapController controller){
-            _controller = controller;
-          },
-          markers: _markers,
-          myLocationEnabled: true,
-        ) ,
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.location_searching,color: Colors.white,),
-        onPressed: (){
-          getCurrentLocation();
-        },
-      ),
-    );
+        body: Stack(children: [
+          Container(
+              child: GoogleMap(
+                polylines: polyline,
+                zoomControlsEnabled: false,
+                onMapCreated: _onMapCreated,
+                myLocationEnabled: true,
+                initialCameraPosition: CameraPosition(target: _center, zoom: 11),
+              )),
+          Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: double.infinity,
+                margin: EdgeInsets.fromLTRB(10, 0, 10, 40),
+                height: 140,
+                padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                decoration: BoxDecoration(
+                    color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            Text("SPEED (KM/H)",
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 10, fontWeight: FontWeight.w300)),
+                            Text(_speed.toStringAsFixed(2),
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 30, fontWeight: FontWeight.w300))
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text("TIME",
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 10, fontWeight: FontWeight.w300)),
+                            StreamBuilder<int>(
+                              stream: _stopWatchTimer.rawTime,
+                              initialData: 0,
+                              builder: (context, snap) {
+                                _time = snap.data;
+                                _displayTime =
+                                    StopWatchTimer.getDisplayTimeHours(_time!) +
+                                        ":" +
+                                        StopWatchTimer.getDisplayTimeMinute(_time!) +
+                                        ":" +
+                                        StopWatchTimer.getDisplayTimeSecond(_time!);
+                                return Text(_displayTime!,
+                                    style: GoogleFonts.montserrat(
+                                        fontSize: 30, fontWeight: FontWeight.w300));
+                              },
+                            )
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text("DISTANCE (KM)",
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 10, fontWeight: FontWeight.w300)),
+                            Text((_dist / 1000).toStringAsFixed(2),
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 30, fontWeight: FontWeight.w300))
+                          ],
+                        )
+                      ],
+                    ),
+                    Divider(),
+                    IconButton(
+                      icon: Icon(
+                        Icons.stop_circle_outlined,
+                        size: 50,
+                        color: Colors.redAccent,
+                      ),
+                      padding: EdgeInsets.all(0),
+                      onPressed: () async {
+
+                      },
+                    )
+                  ],
+                ),
+              ))
+        ]));
   }
 }
