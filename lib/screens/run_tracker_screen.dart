@@ -41,6 +41,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   void dispose() async {
     super.dispose();
     await _stopWatchTimer.dispose(); // Need to call dispose function.
+    _mapController!.dispose();
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -62,7 +63,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
           if (_lastTime != null && timeDuration != 0) {
             _speed = (appendDist / (timeDuration / 100)) * 3.6;
             if (_speed != 0) {
-              _avgSpeed = _avgSpeed + _speed;
+              _avgSpeed = _avgSpeed + _speed ;
               _speedCounter++;
             }
           }
@@ -86,6 +87,9 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Run Tracker"),
+      ),
         body: Stack(children: [
           Container(
               child: GoogleMap(
