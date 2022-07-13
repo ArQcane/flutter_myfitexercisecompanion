@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../services/auth_service.dart';
+import '../data/repositories/auth_repository.dart';
+import 'loading_circle.dart';
 
 class RegisterForm extends StatefulWidget {
   @override
@@ -11,32 +13,52 @@ class _RegisterFormState extends State<RegisterForm> {
   String? email;
   String? password;
   String? confirmPassword;
+  bool isLoading = false;
   var form = GlobalKey<FormState>();
 
-
-  register() {
-    bool isValid = form.currentState!.validate();
-    if (isValid) {
-      form.currentState!.save();
-      if (password != confirmPassword) {
-        FocusScope.of(context).unfocus();
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Password and Confirm Password does not match!'),));
-      }
-      AuthService authService = AuthService();
-      return authService.register(email, password).then((value) {
-        FocusScope.of(context).unfocus();
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User Registered successfully!'),));
-      }).catchError((error) {
-        FocusScope.of(context).unfocus();
-        String message = error.toString();
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message),));
+  void submitForm(BuildContext context) async{
+    FocusScope.of(context).unfocus();
+    if (form.currentState!.validate()) {
+      setState(() {
+        isLoading = true;
       });
+      form.currentState!.save();
+      try {
+        await AuthRepository().register(
+          email,
+          password,
+        );
+        setState(() {
+          isLoading = false;
+        });
+        AuthRepository().logOut();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Account successfully created"),
+            action: SnackBarAction(
+              label: "OKAY",
+              onPressed: () {},
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        form.currentState!.reset();
+        Navigator.of(context).pop();
+      } catch (exception) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:  Text((exception as FirebaseException).message.toString()),
+            action: SnackBarAction(
+              label: "OKAY",
+              onPressed: () {},
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -119,11 +141,12 @@ Widget build(BuildContext context) {
         SizedBox(height: 20),
         ElevatedButton.icon(
           onPressed: () {
-            register();
+            submitForm(context);
           },
           icon: Icon(Icons.app_registration),
           label: Text('Register'),
         ),
+        if (isLoading) LoadingCircle(),
       ],
     ),
   );

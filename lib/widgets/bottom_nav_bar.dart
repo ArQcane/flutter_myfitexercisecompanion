@@ -6,13 +6,9 @@ import '../screens/calorie_counter_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/run_tracker_screen.dart';
-import '../services/auth_service.dart';
 
 class BottomNavBar extends StatefulWidget {
   static String routeName = '/navigation-bar';
-
-  User currentUser;
-  BottomNavBar(this.currentUser);
 
 
   @override
@@ -21,7 +17,6 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   int selectedIndex =  0;
-  AuthService authService = AuthService();
 
   final FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -64,7 +59,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           child: selectedIndex == 0 ? HomeScreen() :
           selectedIndex ==   1 ? RunTrackerScreen() :
           selectedIndex == 2 ? CalorieCounterScreen() :
-          ProfileScreen(widget.currentUser),
+          ProfileScreen(),
         ));
   }
 }

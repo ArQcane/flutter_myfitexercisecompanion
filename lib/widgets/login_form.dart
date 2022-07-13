@@ -1,6 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
+import 'package:flutter_myfitexercisecompanion/screens/user_add_details_screen.dart';
+import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 
-import '../services/auth_service.dart';
+import '../data/repositories/auth_repository.dart';
+import '../data/repositories/user_repository.dart';
 
 class LoginForm extends StatefulWidget {
   @override
@@ -10,27 +15,50 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   String? email;
   String? password;
+  bool isLoading = false;
   var form = GlobalKey<FormState>();
 
-  login() {
-    bool isValid = form.currentState!.validate();
-    if (isValid) {
-      form.currentState!.save();
-      AuthService authService = AuthService();
-      return authService.login(email, password).then((value) {
-        FocusScope.of(context).unfocus();
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Login successfully!'),
-        ));
-      }).catchError((error) {
-        FocusScope.of(context).unfocus();
-        String message = error.toString();
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(message),
-        ));
+  void submitForm(BuildContext context) async {
+    FocusScope.of(context).unfocus();
+    if (form.currentState?.validate() == true) {
+      setState(() {
+        isLoading = true;
       });
+      form.currentState?.save();
+      try {
+        await AuthRepository().login(
+          email,
+          password,
+        );
+        form.currentState?.reset();
+        UserDetail? user = await UserRepository.instance().getUser();
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) {
+              if (user == null) return UserAddDetailsScreen();
+              return BottomNavBar();
+            },
+          ),
+        );
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text((e as FirebaseException).message.toString()),
+            action: SnackBarAction(
+              label: "OKAY",
+              onPressed: () {},
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -93,7 +121,7 @@ class _LoginFormState extends State<LoginForm> {
           SizedBox(height: 20),
           ElevatedButton.icon(
             onPressed: () {
-              login();
+              submitForm(context);
             },
             icon: Icon(Icons.login),
             label: Text('Login'),
