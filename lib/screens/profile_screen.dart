@@ -193,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       radius: 50,
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(50),
-                                        child: Icon(Icons.add),
+                                        child: snapshot.data?.profilePic != null ? Image.network(snapshot.data!.profilePic ?? "") : Icon(Icons.person),
                                       )),
                                   Positioned(
                                     bottom: 0,
@@ -227,8 +227,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: Colors.deepOrange, size: 25),
                         text: "Edit Account",
                         press: () => Navigator.pushNamed(
-                            context, EditProfileScreen.routeName,
-                            arguments: snapshot.data!)),
+                            context, EditProfileScreen.routeName,)
+                    ),
                     ProfileMenu(
                       icon: Icon(Icons.logout_outlined,
                           color: Colors.deepOrange, size: 25),

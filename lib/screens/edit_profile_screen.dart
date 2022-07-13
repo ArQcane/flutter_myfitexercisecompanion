@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
-
-import 'package:flutter_myfitexercisecompanion/screens/profile_screen.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/profile_picture.dart';
 
@@ -12,8 +11,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../data/repositories/user_repository.dart';
 import '../utils/snackbar.dart';
-
-
 
 class EditProfileScreen extends StatefulWidget {
   static String routeName = '/edit-profile';
@@ -36,25 +33,46 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool isLoading = false;
   bool isUploading = false;
 
+  void _pickImage(ImageSource source) async {
+    XFile? pickedImage = await ImagePicker().pickImage(source: source);
+    if (pickedImage == null) return;
+    setState(() {
+      isLoading = true;
+      isUploading = true;
+    });
+    bool results = await UserRepository.instance().updateUser(
+      map: {},
+      profilePic: File(pickedImage.path),
+    );
+    setState(() {
+      isLoading = false;
+      isUploading = false;
+    });
+    SnackbarUtils(context: context).createSnackbar(
+      results
+          ? "Updated profile picture successfully"
+          : "Unknown error has occurred",
+    );
+  }
 
-  // Future<void> pickUpLoadImage() async {
-  //   final image = await ImagePicker().pickImage(
-  //       source: ImageSource.gallery,
-  //       maxHeight: 512,
-  //       maxWidth: 512,
-  //       imageQuality: 75);
-  //
-  //   Reference ref = FirebaseStorage.instance
-  //       .ref()
-  //       .child("${authService.getCurrentUser()?.uid}_profilepic");
-  //
-  //   await ref.putFile(File(image!.path));
-  //   ref.getDownloadURL().then((value) {
-  //     setState(() {
-  //       profilePic = value;
-  //     });
-  //   });
-  // }
+  Future<void> pickUpLoadImage() async {
+    final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxHeight: 512,
+        maxWidth: 512,
+        imageQuality: 75);
+
+    Reference ref = FirebaseStorage.instance
+        .ref()
+        .child("${AuthRepository().getCurrentUser()?.uid}_profilepic");
+
+    await ref.putFile(File(image!.path));
+    ref.getDownloadURL().then((value) {
+      setState(() {
+        profilePic = value;
+      });
+    });
+  }
 
   void saveForm(BuildContext context) async {
     FocusScope.of(context).unfocus();
@@ -73,6 +91,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (height != _userDetail!.height) {
         map["height"] = height;
       }
+      if (profilePic != _userDetail!.profilePic) {
+        map["profilePic"] = profilePic;
+      }
       if (map.isEmpty) {
         setState(() {
           isLoading = false;
@@ -89,7 +110,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text( updateResults
+            content: Text(updateResults
                 ? 'Account updated successfully!'
                 : 'Unknown error has occurred'),
             action: SnackBarAction(
@@ -105,7 +126,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text( (e as FirebaseException).message.toString()),
+            content: Text((e as FirebaseException).message.toString()),
             action: SnackBarAction(
               label: "OKAY",
               onPressed: () {},
@@ -117,33 +138,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-    @override
-    Widget build(BuildContext context) {
-
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Edit Profile'),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  saveForm(context);
-                },
-                icon: Icon(Icons.save))
-          ],
-        ),
-        body: StreamBuilder<UserDetail?>(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Edit Profile'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                saveForm(context);
+              },
+              icon: Icon(Icons.save))
+        ],
+      ),
+      body: StreamBuilder<UserDetail?>(
           stream: UserRepository.instance().getUserStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || isUploading) {
-              return LoadingCircle(
-                overlayVisibility: false,
-              );
+              return LoadingCircle();
             }
             if (snapshot.hasData) {
               _userDetail = snapshot.data;
               username = _userDetail?.username;
               weight = _userDetail?.weight;
               height = _userDetail?.height;
+              profilePic = _userDetail?.profilePic ?? "";
             }
             return Container(
               padding: EdgeInsets.all(10),
@@ -156,13 +175,59 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ProfileImage(width: double.infinity, snapshot: snapshot)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height: 115,
+                                  width: 115,
+                                  child: Stack(
+                                      fit: StackFit.expand,
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        CircleAvatar(
+                                            radius: 50,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                              child: Image.network(profilePic),
+                                            )),
+                                        Positioned(
+                                          bottom: 0,
+                                          right: -15,
+                                          child: SizedBox(
+                                            height: 46,
+                                            width: 46,
+                                            child: FlatButton(
+                                              padding: EdgeInsets.zero,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(50),
+                                                  side: BorderSide(
+                                                      color:
+                                                          Colors.orangeAccent)),
+                                              color: Color(0xFFF5F6F9),
+                                              onPressed: () {
+                                                _pickImage(ImageSource.gallery);
+                                              },
+                                              child: Icon(Icons.camera_alt),
+                                            ),
+                                          ),
+                                        ),
+                                      ]),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     TextFormField(
                       initialValue: _userDetail?.email,
-                      decoration: InputDecoration(label: Text("Email Registered")),
+                      decoration:
+                          InputDecoration(label: Text("Email Registered")),
                       onSaved: (value) {
                         email = value;
                       },
@@ -230,8 +295,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             );
-          }
-        ),
-      );
-    }
+          }),
+    );
+  }
 }

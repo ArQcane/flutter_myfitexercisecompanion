@@ -32,17 +32,13 @@ class _LoginFormState extends State<LoginForm> {
         );
         form.currentState?.reset();
         UserDetail? user = await UserRepository.instance().getUser();
+        print("user details ${user}");
         setState(() {
           isLoading = false;
         });
-        Navigator.pushReplacement(
+        Navigator.pushReplacementNamed(
           context,
-          MaterialPageRoute(
-            builder: (_) {
-              if (user == null) return UserAddDetailsScreen();
-              return BottomNavBar();
-            },
-          ),
+          user == null ? UserAddDetailsScreen.routeName : BottomNavBar.routeName,
         );
       } catch (e) {
         setState(() {

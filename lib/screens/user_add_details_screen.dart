@@ -69,11 +69,11 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
       try {
         bool insertResults = await UserRepository.instance().insertUser(
           UserDetail(
-            username: username!,
-            email: AuthRepository().getCurrentUser()!.email!,
-            height: height!,
-            weight: weight!,
-            profilePic: profilePic
+              username: username!,
+              email: AuthRepository().getCurrentUser()!.email!,
+              height: height!,
+              weight: weight!,
+              profilePic: profilePic
           ),
         );
         setState(() {
@@ -102,99 +102,114 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('User Details'),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  saveForm(context);
-                },
-                icon: Icon(Icons.save))
-          ],
-        ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 20,
-                ),
-                child: Form(
-                  key: form,
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        height: 250,
-                        padding: const EdgeInsets.all(50),
-                        child: Image.asset('images/fit_running_logo_template_transparent.png'),
-                      ),
-                      TextFormField(
-                        decoration:
-                        InputDecoration(label: Text("Username")),
-                        onSaved: (value) {
-                          username = value;
-                        },
-                        validator: (value) {
-                          if (value == null) {
-                            return "Please provide a username.";
-                          } else
-                            return null;
-                        },
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(label: Text("Height")),
-                        validator: (value) {
-                          if (value == null) {
-                            return "Please provide your height in cm.";
-                          } else if (double.tryParse(value) == null) {
-                            return "Please provide a valid height.";
-                          } else if (double.tryParse(value)! < 100) {
-                            return "Please provide a height that is above 100cm";
-                          } else
-                            return null;
-                        },
-                        keyboardType: TextInputType.number,
-                        onSaved: (value) {
-                          height = double.parse(value!);
-                        },
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(label: Text("Weight")),
-                        validator: (value) {
-                          if (value == null) {
-                            return "Please provide your weight in kg.";
-                          } else if (double.tryParse(value) == null) {
-                            return "Please provide a valid weight.";
-                          } else if (double.tryParse(value)! < 40) {
-                            return "Please provide a weight that is humanly possible";
-                          } else
-                            return null;
-                        },
-                        keyboardType: TextInputType.number,
-                        onSaved: (value) {
-                          weight = double.parse(value!);
-                        },
-                      ),
-                      const SizedBox(
-                        height: 30,
-                      ),
-                    ],
-                  ),
-                ),
+      child: FutureBuilder<UserDetail?>(
+          future: UserRepository.instance().getUser(),
+          builder: (context, snapshot) {
+            if(snapshot.connectionState == ConnectionState.waiting){
+              return LoadingCircle();
+            }
+            if(snapshot.connectionState == ConnectionState.done){
+              Future.delayed(Duration.zero, () async {
+                Navigator.pushReplacementNamed(context, BottomNavBar.routeName);
+              });
+            }
+            return Scaffold(
+              appBar: AppBar(
+                title: Text('User Details'),
+                actions: [
+                  IconButton(
+                      onPressed: () {
+                        saveForm(context);
+                      },
+                      icon: Icon(Icons.save))
+                ],
               ),
-            ),
-            if (isLoading) LoadingCircle()
-          ],
-        ),
+              body: Stack(
+                children: [
+                  SingleChildScrollView(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 50,
+                        vertical: 20,
+                      ),
+                      child: Form(
+                        key: form,
+                        child: Column(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: 250,
+                              padding: const EdgeInsets.all(50),
+                              child: Image.asset(
+                                  'images/fit_running_logo_template_transparent.png'),
+                            ),
+                            TextFormField(
+                              decoration:
+                              InputDecoration(label: Text("Username")),
+                              onSaved: (value) {
+                                username = value;
+                              },
+                              validator: (value) {
+                                if (value == null) {
+                                  return "Please provide a username.";
+                                } else
+                                  return null;
+                              },
+                            ),
+                            TextFormField(
+                              decoration: InputDecoration(
+                                  label: Text("Height")),
+                              validator: (value) {
+                                if (value == null) {
+                                  return "Please provide your height in cm.";
+                                } else if (double.tryParse(value) == null) {
+                                  return "Please provide a valid height.";
+                                } else if (double.tryParse(value)! < 100) {
+                                  return "Please provide a height that is above 100cm";
+                                } else
+                                  return null;
+                              },
+                              keyboardType: TextInputType.number,
+                              onSaved: (value) {
+                                height = double.parse(value!);
+                              },
+                            ),
+                            TextFormField(
+                              decoration: InputDecoration(
+                                  label: Text("Weight")),
+                              validator: (value) {
+                                if (value == null) {
+                                  return "Please provide your weight in kg.";
+                                } else if (double.tryParse(value) == null) {
+                                  return "Please provide a valid weight.";
+                                } else if (double.tryParse(value)! < 40) {
+                                  return "Please provide a weight that is humanly possible";
+                                } else
+                                  return null;
+                              },
+                              keyboardType: TextInputType.number,
+                              onSaved: (value) {
+                                weight = double.parse(value!);
+                              },
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isLoading) LoadingCircle()
+                ],
+              ),
+            );
+          }
       ),
     );
   }

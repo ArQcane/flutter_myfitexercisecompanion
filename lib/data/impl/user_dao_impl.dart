@@ -52,17 +52,18 @@ class UserDaoImpl implements UserDao{
 
   @override
   Future<UserDetail?> getUser() async {
-    try{
+    try {
       DocumentSnapshot<Map<String, dynamic>> document = await _firestore
-          .collection("users")
+          .collection('users')
           .doc(_firebaseAuth.currentUser!.email)
           .get();
-      if(_docChecker(document)) return null;
-      return Future.value(UserDetail.fromDocument(document,
-      await _getProfilePicUrlString(document))
-      );
-    } catch(exception) {
-      print(exception.toString());
+      if (_docChecker(document)) return null;
+      return Future.value(UserDetail.fromDocument(
+        document,
+        await _getProfilePicUrlString(document),
+      ));
+    } catch (e) {
+      print("error ${e.toString()}");
       return null;
     }
   }
@@ -111,8 +112,8 @@ class UserDaoImpl implements UserDao{
             .collection('users')
             .doc(_firebaseAuth.currentUser!.email)
             .get();
-        if (doc.data()!.containsKey('profileImage')) {
-          _reference.child(doc["profileImage"]).delete();
+        if (doc.data()!.containsKey('profilePic')) {
+          _reference.child(doc["profilePic"]).delete();
         }
       }
       await _firestore
@@ -130,8 +131,8 @@ class UserDaoImpl implements UserDao{
   bool _docChecker(DocumentSnapshot<Map<String, dynamic>> document) =>
       !document.exists ||
           !document.data()!.containsKey('username') ||
-          !document.data()!.containsKey('heightInCentimetres') ||
-          !document.data()!.containsKey('weightInKilograms');
+          !document.data()!.containsKey('height') ||
+          !document.data()!.containsKey('weight');
 
   Future<String?> _getProfilePicUrlString(
       DocumentSnapshot<Map<String, dynamic>> document,
