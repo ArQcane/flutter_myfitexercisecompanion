@@ -3,15 +3,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
 import 'package:flutter_myfitexercisecompanion/screens/calorie_counter_screen.dart';
-import 'package:flutter_myfitexercisecompanion/screens/edit_profile_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/home_screen.dart';
-import 'package:flutter_myfitexercisecompanion/screens/profile_screen.dart';
-import 'package:flutter_myfitexercisecompanion/screens/run_tracker_screen.dart';
-import 'package:flutter_myfitexercisecompanion/screens/user_add_details_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/profile/edit_profile_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/auth/profile_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/tracking/run_tracker_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/auth/user_add_details_screen.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
-import 'package:flutter_myfitexercisecompanion/widgets/login_form.dart';
-import 'package:flutter_myfitexercisecompanion/widgets/register_form.dart';
-import 'package:flutter_myfitexercisecompanion/screens/reset_password_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/profile/login_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/auth/register_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/auth/reset_password_screen.dart';
 
 import 'data/repositories/auth_repository.dart';
 

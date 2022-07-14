@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
-import 'package:flutter_myfitexercisecompanion/screens/edit_profile_screen.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 
-import '../data/repositories/firestore_service.dart';
-import '../main.dart';
+import '../../data/repositories/firestore_service.dart';
+import '../../main.dart';
+import '../profile/edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   static String routeName = "/profile";

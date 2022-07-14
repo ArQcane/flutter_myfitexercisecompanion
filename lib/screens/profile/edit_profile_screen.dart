@@ -5,12 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
-import 'package:flutter_myfitexercisecompanion/widgets/profile_picture.dart';
 
 import 'package:image_picker/image_picker.dart';
 
-import '../data/repositories/user_repository.dart';
-import '../utils/snackbar.dart';
+import '../../data/repositories/user_repository.dart';
+import '../../utils/snackbar.dart';
 
 class EditProfileScreen extends StatefulWidget {
   static String routeName = '/edit-profile';

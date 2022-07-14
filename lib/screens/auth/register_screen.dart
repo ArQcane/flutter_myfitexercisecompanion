@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../data/repositories/auth_repository.dart';
-import 'loading_circle.dart';
+import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/auth_repository.dart';
+import '../../widgets/loading_circle.dart';
 
 class RegisterForm extends StatefulWidget {
   @override

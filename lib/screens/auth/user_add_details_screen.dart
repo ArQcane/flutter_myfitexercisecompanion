@@ -9,10 +9,10 @@ import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../data/models/user_detail.dart';
-import '../data/repositories/auth_repository.dart';
-import '../data/repositories/user_repository.dart';
-import '../utils/snackbar.dart';
+import '../../data/models/user_detail.dart';
+import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/user_repository.dart';
+import '../../utils/snackbar.dart';
 
 class UserAddDetailsScreen extends StatefulWidget {
   static String routeName = '/add-details';

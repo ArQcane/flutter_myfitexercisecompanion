@@ -4,8 +4,8 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 
 import '../screens/calorie_counter_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/profile_screen.dart';
-import '../screens/run_tracker_screen.dart';
+import '../screens/auth/profile_screen.dart';
+import '../screens/tracking/run_tracker_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   static String routeName = '/navigation-bar';
