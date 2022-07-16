@@ -63,7 +63,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     Reference ref = FirebaseStorage.instance
         .ref()
-        .child("${AuthRepository.instance().getCurrentUser()?.uid}_profilepic");
+        .child("${AuthRepository().getCurrentUser()?.uid}_profilepic");
 
     await ref.putFile(File(image!.path));
     ref.getDownloadURL().then((value) {

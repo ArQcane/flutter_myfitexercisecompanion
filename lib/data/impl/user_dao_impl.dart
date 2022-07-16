@@ -22,9 +22,9 @@ class UserDaoImpl implements UserDao{
     try {
       await _firestore
           .collection('users')
-          .doc(_firebaseAuth.currentUser!.email)
+          .doc(_firebaseAuth.currentUser?.email)
           .delete();
-      await _firebaseAuth.currentUser!.delete();
+      await _firebaseAuth.currentUser?.delete();
       return Future.value(true);
     } catch (e) {
       print(e.toString());
@@ -72,7 +72,7 @@ class UserDaoImpl implements UserDao{
   Stream<UserDetail?> getUserStream() {
     return _firestore
         .collection('users')
-        .doc(_firebaseAuth.currentUser!.email)
+        .doc(_firebaseAuth.currentUser?.email)
         .snapshots()
         .asyncMap(
           (doc) async {

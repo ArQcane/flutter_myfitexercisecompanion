@@ -16,7 +16,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     bool isValid = form.currentState!.validate();
     if (isValid) {
       form.currentState!.save();
-      return AuthRepository.instance().forgotPassword(email).then((value) {
+      return AuthRepository().forgotPassword(email).then((value) {
         FocusScope.of(context).unfocus();
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

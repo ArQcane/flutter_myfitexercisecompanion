@@ -70,7 +70,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
         bool insertResults = await UserRepository.instance().insertUser(
           UserDetail(
               username: username!,
-              email: AuthRepository.instance().getCurrentUser()!.email!,
+              email: AuthRepository().getCurrentUser()!.email!,
               height: height!,
               weight: weight!,
               profilePic: profilePic
@@ -112,7 +112,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
             if(snapshot.connectionState == ConnectionState.waiting){
               return LoadingCircle();
             }
-            if(snapshot.connectionState == ConnectionState.done){
+            if(snapshot.data != null){
               Future.delayed(Duration.zero, () async {
                 Navigator.pushReplacementNamed(context, BottomNavBar.routeName);
               });

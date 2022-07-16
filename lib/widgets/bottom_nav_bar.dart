@@ -59,7 +59,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           child: selectedIndex == 0 ? HomeScreen() :
           selectedIndex ==   1 ? RunTrackerScreen() :
           selectedIndex == 2 ? CalorieCounterScreen() :
-          ProfileScreen(),
+          selectedIndex == 3 ? ProfileScreen() : null,
         ));
   }
 }

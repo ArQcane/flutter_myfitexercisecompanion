@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/utils/snackbar.dart';
 
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -12,12 +13,12 @@ class RegisterForm extends StatefulWidget {
 
 class _RegisterFormState extends State<RegisterForm> {
   String? email;
-  String? password;
-  String? confirmPassword;
+  final TextEditingController _pass = TextEditingController();
+  final TextEditingController _confirmPass = TextEditingController();
   bool isLoading = false;
   var form = GlobalKey<FormState>();
 
-  void submitForm(BuildContext context) async{
+  void submitForm() async{
     FocusScope.of(context).unfocus();
     if (form.currentState!.validate()) {
       setState(() {
@@ -25,14 +26,13 @@ class _RegisterFormState extends State<RegisterForm> {
       });
       form.currentState!.save();
       try {
-        await AuthRepository.instance().register(
+        await AuthRepository().register(
           email,
-          password,
+          _pass.text,
         );
         setState(() {
           isLoading = false;
         });
-        AuthRepository.instance().logOut();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Account successfully created"),
@@ -44,7 +44,6 @@ class _RegisterFormState extends State<RegisterForm> {
           ),
         );
         form.currentState!.reset();
-        Navigator.of(context).pop();
       } catch (exception) {
         setState(() {
           isLoading = false;
@@ -104,16 +103,21 @@ Widget build(BuildContext context) {
               ),
               icon: Icon(Icons.password),),
             obscureText: true,
+            controller: _pass,
             validator: (value) {
               if (value == null)
                 return 'Please provide a password.';
               else if (value.length < 6)
                 return 'Password must be at least 6 characters.';
+              else if (value != _confirmPass.text)
+                return 'Passwords do not match';
               else
                 return null;
             },
             onSaved: (value) {
-              password = value;
+              setState((){
+                _pass.text = value!;
+              });
             },
           ),
         ),
@@ -126,23 +130,29 @@ Widget build(BuildContext context) {
                 ),
                 icon: Icon(Icons.checklist_rtl_outlined)),
             obscureText: true,
+            controller: _confirmPass,
             validator: (value) {
               if (value == null)
                 return 'Please provide a password.';
               else if (value.length < 6)
                 return 'Password must be at least 6 characters.';
+              else if(value != _confirmPass.text){
+                return 'Passwords do not match';
+              }
               else
                 return null;
             },
             onSaved: (value) {
-              confirmPassword = value;
+              setState((){
+                _confirmPass.text = value!;
+              });
             },
           ),
         ),
         SizedBox(height: 20),
         ElevatedButton.icon(
           onPressed: () {
-            submitForm(context);
+            submitForm();
           },
           icon: Icon(Icons.app_registration),
           label: Text('Register'),

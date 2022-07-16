@@ -175,7 +175,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
 
     RunModel runModel = RunModel(
         id: '',
-        email: AuthRepository.instance().getCurrentUser()!.email!,
+        email: AuthRepository().getCurrentUser()!.email!,
         runTitle: runTitle,
         mapScreenshot: mapScreenshotRef,
         timeTakenInMilliseconds: _time!,

@@ -16,21 +16,21 @@ class _LoginFormState extends State<LoginForm> {
   String? email;
   String? password;
   bool isLoading = false;
-  var form = GlobalKey<FormState>();
+  var loginForm = GlobalKey<FormState>();
 
-  void submitForm(BuildContext context) async {
+  void submitForm() async {
     FocusScope.of(context).unfocus();
-    if (form.currentState?.validate() == true) {
+    if (loginForm.currentState?.validate() == true) {
       setState(() {
         isLoading = true;
       });
-      form.currentState?.save();
+      loginForm.currentState?.save();
       try {
-        await AuthRepository.instance().login(
+        await AuthRepository().login(
           email,
           password,
         );
-        form.currentState?.reset();
+        loginForm.currentState?.reset();
         UserDetail? user = await UserRepository.instance().getUser();
         print("user details ${user}");
         setState(() {
@@ -61,7 +61,7 @@ class _LoginFormState extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: form,
+      key: loginForm,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -117,7 +117,7 @@ class _LoginFormState extends State<LoginForm> {
           SizedBox(height: 20),
           ElevatedButton.icon(
             onPressed: () {
-              submitForm(context);
+              submitForm();
             },
             icon: Icon(Icons.login),
             label: Text('Login'),

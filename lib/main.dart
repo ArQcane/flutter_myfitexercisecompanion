@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return FutureBuilder(
       future: Firebase.initializeApp(),
       builder: (ctx, snapshot) => StreamBuilder<User?>(
-        stream: AuthRepository.instance().getAuthUser(),
+        stream: AuthRepository().getAuthUser(),
         builder: (context, snapshot) {
           return MaterialApp(
               theme: ThemeData(
