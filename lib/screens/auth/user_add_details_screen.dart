@@ -9,7 +9,7 @@ import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../data/models/user_detail.dart';
+import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../utils/snackbar.dart';
@@ -70,7 +70,7 @@ class _UserAddDetailsScreenState extends State<UserAddDetailsScreen> {
         bool insertResults = await UserRepository.instance().insertUser(
           UserDetail(
               username: username!,
-              email: AuthRepository().getCurrentUser()!.email!,
+              email: AuthRepository.instance().getCurrentUser()!.email!,
               height: height!,
               weight: weight!,
               profilePic: profilePic

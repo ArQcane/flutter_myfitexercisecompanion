@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
@@ -38,8 +38,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if(step1){
         //delete user info in the database
-        var user = AuthRepository().getCurrentUser();
-        var credential = EmailAuthProvider.credential(email: AuthRepository().getCurrentUser()!.email.toString(), password: password!);
+        var user = AuthRepository.instance().getCurrentUser();
+        var credential = EmailAuthProvider.credential(email: AuthRepository.instance().getCurrentUser()!.email.toString(), password: password!);
         await user?.reauthenticateWithCredential(credential);
         await UserRepository.instance().deleteUser();
         step1 = false;
@@ -48,13 +48,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if(step2){
         //delete user
-        AuthRepository().getCurrentUser()!.delete();
+        AuthRepository.instance().getCurrentUser()!.delete();
         step2 = false ;
         step3 = true;
       }
 
       if(step3){
-        await AuthRepository().logOut();
+        await AuthRepository.instance().logOut();
         step3 = false;
         step4 = true ;
 
@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   logOut() {
-    return AuthRepository().logOut().then((value) {
+    return AuthRepository.instance().logOut().then((value) {
       FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -25,14 +25,14 @@ class _RegisterFormState extends State<RegisterForm> {
       });
       form.currentState!.save();
       try {
-        await AuthRepository().register(
+        await AuthRepository.instance().register(
           email,
           password,
         );
         setState(() {
           isLoading = false;
         });
-        AuthRepository().logOut();
+        AuthRepository.instance().logOut();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Account successfully created"),

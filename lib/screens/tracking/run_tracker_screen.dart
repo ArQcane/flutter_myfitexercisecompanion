@@ -1,4 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/run_model.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/run_repository.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,6 +11,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../utils/snackbar.dart';
 
 class RunTrackerScreen extends StatefulWidget {
   static String routeName = "/runtracker";
@@ -25,6 +33,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   String? _displayTime;
   int? _time;
   double _speed = 0;
+  String runTitle = "";
 
   bool isTracking = false;
   bool isFirstTimeTracking = true;
@@ -36,6 +45,9 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   void initState() {
     super.initState();
     _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
+    _runTitleController.addListener(() {
+      runTitle = _runTitleController.text;
+    });
   }
 
   @override
@@ -48,7 +60,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
     _location.onLocationChanged.listen((event) {
-      if(isTracking == false) return;
+      if (isTracking == false)
+        return;
       else {
         notificationManagerConfiguration();
         print("working");
@@ -69,7 +82,9 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             for (int i = 0; i < list.length - 1; i++) {
               // distanceRan += _calculateDistance(list[i], list[i + 1]);
               distanceRan = Geolocator.distanceBetween(
-                  list[i].latitude, list[i].longitude, list[i + 1].latitude,
+                  list[i].latitude,
+                  list[i].longitude,
+                  list[i + 1].latitude,
                   list[i + 1].longitude);
             }
           }
@@ -94,6 +109,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
       }
     });
   }
+
   void _handleClick() {
     setState(() {
       isTracking = !isTracking;
@@ -110,8 +126,75 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
     });
   }
 
-  void saveRun() {
+  void showDialogForTitle(BuildContext context) {
+    if (_runRoute.isEmpty || _runRoute[0].length < 2 || takingMapScreenshot)
+      return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Account?'),
+        content:
+            Text('Are you sure you want to delete your account permanently?'),
+        actions: [
+          TextField(
+            controller: _runTitleController,
+          ),
+          ElevatedButton(
+              onPressed: () {
+                saveRun();
+                Navigator.pop(context);
+              },
+              child: Text('Yes')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('No'),
+          ),
+        ],
+      ),
+    );
+  }
 
+  void saveRun() async {
+    if (_runRoute.isEmpty || _runRoute[0].length < 2 || takingMapScreenshot)
+      return;
+    setState(() {
+      isTracking = false;
+      takingMapScreenshot = true;
+    });
+    print("mapscreenshot value: $takingMapScreenshot");
+    print("runtitle value: $runTitle");
+    await Future.delayed(
+      const Duration(milliseconds: 200),
+      null,
+    );
+    _location.enableBackgroundMode(enable: false);
+    Uint8List? mapScreenshot = await _mapController?.takeSnapshot();
+    String mapScreenshotRef = "screenshot(map)/${const Uuid().v4()}";
+
+    RunModel runModel = RunModel(
+        id: '',
+        email: AuthRepository.instance().getCurrentUser()!.email!,
+        runTitle: runTitle,
+        mapScreenshot: mapScreenshotRef,
+        timeTakenInMilliseconds: _time!,
+        distanceRanInMetres: _dist,
+        averageSpeed: _speed);
+
+    bool waitingForInsert =
+        await RunRepository.instance().insertRun(runModel, mapScreenshot!);
+
+    if (!waitingForInsert) {
+      return SnackbarUtils(context: context)
+          .createSnackbar('Unknown Error has occurred');
+    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BottomNavBar(),
+      ),
+    );
   }
 
   void cancelRun(BuildContext context) {
@@ -159,12 +242,16 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   void notificationManagerConfiguration() async {
     print("displayTime: $_displayTime");
     await _location.changeNotificationOptions(
-        title: 'MyFitExerciseTracker',
-        subtitle: "$_displayTime  ||  ${(_dist/1000).toStringAsFixed(2)} km  ||  ${_speed.toStringAsFixed(2)} km/h}",
-        iconName: "fit_running_logo_template.png",
-        color: Colors.deepOrangeAccent
+      title: 'MyFitExerciseTracker',
+      subtitle:
+          "$_displayTime  ||  ${(_dist / 1000).toStringAsFixed(2)} km  ||  ${_speed.toStringAsFixed(2)} km/h}",
+      iconName: "fit_running_logo_template.png",
+      color: Colors.deepOrangeAccent,
+      onTapBringToFront: true,
     );
   }
+
+  final _runTitleController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -174,14 +261,20 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
           actions: [
             if (!isTracking && !isFirstTimeTracking)
               IconButton(
-                onPressed: (){},
+                onPressed: () {
+                  setState(() {
+                    showDialogForTitle(context);
+                  });
+                },
                 icon: const Icon(Icons.save),
               ),
-            if(isTracking || !isFirstTimeTracking)
-            IconButton(
-              onPressed: () {cancelRun(context);},
-              icon: const Icon(Icons.close),
-            )
+            if (isTracking || !isFirstTimeTracking)
+              IconButton(
+                onPressed: () {
+                  cancelRun(context);
+                },
+                icon: const Icon(Icons.close),
+              )
           ],
         ),
         body: Stack(children: [
@@ -193,8 +286,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             myLocationEnabled: true,
             initialCameraPosition: CameraPosition(target: _center, zoom: 11),
           )),
-          if(!takingMapScreenshot) ActionPlatform(),
-          if(takingMapScreenshot)
+          if (!takingMapScreenshot) ActionPlatform(),
+          if (takingMapScreenshot)
             SizedBox(
               width: double.infinity,
               height: double.infinity,
@@ -225,7 +318,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
         ]));
   }
 
-  Widget ActionPlatform(){
+  Widget ActionPlatform() {
     return Container(
       child: Align(
           alignment: Alignment.bottomCenter,
@@ -235,8 +328,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             height: 140,
             padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
             decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10)),
+                color: Colors.white, borderRadius: BorderRadius.circular(10)),
             child: Column(
               children: [
                 Row(
@@ -262,18 +354,15 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
                           initialData: 0,
                           builder: (context, snap) {
                             _time = snap.data;
-                            _displayTime =
-                                StopWatchTimer.getDisplayTimeHours(_time!) +
-                                    ":" +
-                                    StopWatchTimer.getDisplayTimeMinute(
-                                        _time!) +
-                                    ":" +
-                                    StopWatchTimer.getDisplayTimeSecond(
-                                        _time!);
+                            _displayTime = StopWatchTimer.getDisplayTimeHours(
+                                    _time!) +
+                                ":" +
+                                StopWatchTimer.getDisplayTimeMinute(_time!) +
+                                ":" +
+                                StopWatchTimer.getDisplayTimeSecond(_time!);
                             return Text(_displayTime!,
                                 style: GoogleFonts.montserrat(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w300));
+                                    fontSize: 30, fontWeight: FontWeight.w300));
                           },
                         )
                       ],
@@ -294,15 +383,15 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
                 IconButton(
                   icon: isTracking == true
                       ? const Icon(
-                    Icons.stop_circle_outlined,
-                    size: 50,
-                    color: Colors.redAccent,
-                  )
+                          Icons.stop_circle_outlined,
+                          size: 50,
+                          color: Colors.redAccent,
+                        )
                       : const Icon(
-                    Icons.play_circle_outlined,
-                    size: 50,
-                    color: Colors.greenAccent,
-                  ),
+                          Icons.play_circle_outlined,
+                          size: 50,
+                          color: Colors.greenAccent,
+                        ),
                   padding: EdgeInsets.all(0),
                   onPressed: () {
                     _handleClick();

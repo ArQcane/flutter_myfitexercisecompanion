@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 
 import '../dao/user_dao.dart';
 import '../impl/user_dao_impl.dart';
@@ -11,7 +11,7 @@ class UserRepository{
   static final UserRepository _userRepository = UserRepository._internal();
   factory UserRepository.instance() => _userRepository;
 
-  final UserDao _userDao = UserDaoImpl();
+  final UserDao _userDao = UserDaoImpl.instance();
 
   Future<UserDetail?> getUser() => _userDao.getUser();
   Stream<UserDetail?> getUserStream() => _userDao.getUserStream();

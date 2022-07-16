@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 
@@ -63,7 +63,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     Reference ref = FirebaseStorage.instance
         .ref()
-        .child("${AuthRepository().getCurrentUser()?.uid}_profilepic");
+        .child("${AuthRepository.instance().getCurrentUser()?.uid}_profilepic");
 
     await ref.putFile(File(image!.path));
     ref.getDownloadURL().then((value) {

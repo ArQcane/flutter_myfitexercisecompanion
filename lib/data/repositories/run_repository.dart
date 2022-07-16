@@ -1,28 +1,32 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:typed_data';
 
-class RunModel {
-  String id, email, mapScreenshot;
-  double distanceRanInMetres, averageSpeed;
-  int timeTakenInMilliseconds;
+import '../dao/run_dao.dart';
+import '../impl/run_dao_impl.dart';
+import '../models/run_model.dart';
 
-  RunModel({
-    required this.id,
-    required this.email,
-    required this.mapScreenshot,
-    required this.timeTakenInMilliseconds,
-    required this.distanceRanInMetres,
-    required this.averageSpeed,
-  });
+class RunRepository{
+  RunRepository._internal();
+  static final RunRepository _runRepository = RunRepository._internal();
+  factory RunRepository.instance() => _runRepository;
 
-  RunModel.fromMap(
-      DocumentSnapshot<Map<String, dynamic>> document,
-      String mapScreenshot,
-      ) : this(
-    id: document.id,
-    mapScreenshot: mapScreenshot,
-    email: document["email"],
-    timeTakenInMilliseconds: document["timeTaken"],
-    distanceRanInMetres: document["distanceRan"],
-    averageSpeed: document["averageSpeed"],
-  );
+  final RunDao _runDao = RunDaoImpl.instance();
+
+  Stream<List<RunModel>> getRunList(String email) {
+    return _runDao.getRunList(email);
+  }
+
+  Future<bool> insertRun(
+      RunModel runModel,
+      Uint8List mapScreenshot,
+      ) {
+    return _runDao.insertRun(runModel, mapScreenshot);
+  }
+
+  Future<bool> updateRun(String id, Map<String, dynamic> newValues) {
+    return _runDao.updateRun(id, newValues);
+  }
+
+  Future<bool> deleteRun(String id) {
+    return _runDao.deleteRun(id);
+  }
 }

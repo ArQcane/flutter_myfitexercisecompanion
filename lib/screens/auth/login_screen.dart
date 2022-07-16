@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:flutter_myfitexercisecompanion/screens/auth/user_add_details_screen.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 
@@ -26,7 +26,7 @@ class _LoginFormState extends State<LoginForm> {
       });
       form.currentState?.save();
       try {
-        await AuthRepository().login(
+        await AuthRepository.instance().login(
           email,
           password,
         );

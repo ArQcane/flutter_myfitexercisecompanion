@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../repositories/run_repository.dart';
+import '../models/run_model.dart';
 
 abstract class RunDao {
   Stream<List<RunModel>> getRunList(String email);

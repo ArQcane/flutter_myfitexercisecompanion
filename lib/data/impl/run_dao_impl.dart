@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/run_repository.dart';
 
 import '../dao/run_dao.dart';
+import '../models/run_model.dart';
 
 class RunDaoImpl implements RunDao {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

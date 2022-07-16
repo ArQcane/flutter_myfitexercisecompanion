@@ -9,7 +9,7 @@ import 'package:flutter_myfitexercisecompanion/screens/auth/profile_screen.dart'
 import 'package:flutter_myfitexercisecompanion/screens/tracking/run_tracker_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/auth/user_add_details_screen.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
-import 'package:flutter_myfitexercisecompanion/screens/profile/login_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/auth/login_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/auth/register_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/auth/reset_password_screen.dart';
 
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return FutureBuilder(
       future: Firebase.initializeApp(),
       builder: (ctx, snapshot) => StreamBuilder<User?>(
-        stream: AuthRepository().getAuthUser(),
+        stream: AuthRepository.instance().getAuthUser(),
         builder: (context, snapshot) {
           return MaterialApp(
               theme: ThemeData(

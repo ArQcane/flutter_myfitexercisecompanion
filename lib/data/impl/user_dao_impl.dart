@@ -4,13 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_myfitexercisecompanion/data/dao/user_dao.dart';
-import 'package:flutter_myfitexercisecompanion/data/models/user_detail.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:uuid/uuid.dart';
 
 class UserDaoImpl implements UserDao{
   UserDaoImpl._internal();
   static final UserDaoImpl _userDaoImpl = UserDaoImpl._internal();
-  factory UserDaoImpl() => _userDaoImpl;
+  factory UserDaoImpl.instance() => _userDaoImpl;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
