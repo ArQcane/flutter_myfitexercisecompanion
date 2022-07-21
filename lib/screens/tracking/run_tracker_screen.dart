@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/run_model.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/run_repository.dart';
@@ -39,16 +40,31 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   bool isTracking = false;
   bool isFirstTimeTracking = true;
   bool takingMapScreenshot = false;
+  String _darkMapStyle = '';
+  String _lightMapStyle = '';
+
+  GlobalKey<FormState> _updateKey = GlobalKey<FormState>();
+  String? newRunTitle;
 
   final StopWatchTimer _stopWatchTimer = StopWatchTimer();
 
   @override
   void initState() {
     super.initState();
-    _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
-    _runTitleController.addListener(() {
-      runTitle = _runTitleController.text;
+    Future.delayed(const Duration(milliseconds: 500), (){
+      _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
+      _runTitleController.addListener(() {
+        runTitle = _runTitleController.text;
+      });
     });
+    _loadMapStyles();
+  }
+
+  Future _loadMapStyles() async {
+    _darkMapStyle =
+    await rootBundle.loadString('map_styles/map_dark_mode.json');
+    _lightMapStyle =
+    await rootBundle.loadString('map_styles/map_light_mode.json');
   }
 
   @override
@@ -104,7 +120,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
                 width: 5,
                 startCap: Cap.roundCap,
                 endCap: Cap.roundCap,
-                color: Colors.deepOrange));
+                color: Theme.of(context).brightness == Brightness.light ? Colors.deepOrange : Colors.greenAccent));
           }
         });
       }
@@ -137,13 +153,26 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
         content: Text(
             'Please enter the title of the run in order to save it under that name'),
         actions: [
-          TextField(
-            controller: _runTitleController,
+          Form(
+            key: _updateKey,
+            child: TextFormField(
+              controller: _runTitleController,
+              onSaved: (value){
+                newRunTitle = value;
+              },
+              validator: (value) {
+                if (value == null || value.length < 4) {
+                  return 'Please put a title that is atleast 4 letters long';
+                }
+                else {
+                  return null;
+                }
+              },
+            ),
           ),
           ElevatedButton(
               onPressed: () {
                 saveRun();
-                Navigator.pop(context);
               },
               child: Text('Yes')),
           ElevatedButton(
@@ -157,54 +186,71 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
     );
   }
 
+  Future<Uint8List?> _takeMapSnapshot([ //for taking ss of both dark and light mode to toggle
+    Brightness brightness = Brightness.light,
+  ]) async {
+    _mapController?.setMapStyle(
+      brightness == Brightness.light ? _lightMapStyle : _darkMapStyle,
+    );
+    await Future.delayed(
+      const Duration(milliseconds: 500),
+    );
+    return _mapController?.takeSnapshot();
+  }
+
   void saveRun() async {
     if (_runRoute.isEmpty || _runRoute[0].length < 2 || takingMapScreenshot)
       return;
-    setState(() {
-      isTracking = false;
-      takingMapScreenshot = true;
-    });
-    print("mapscreenshot value: $takingMapScreenshot");
-    print("runtitle value: $runTitle");
-    await Future.delayed(
-      const Duration(milliseconds: 200),
-      null,
-    );
-    _location.enableBackgroundMode(enable: false);
+    if(_updateKey.currentState?.validate() == true){
+      Navigator.pop(context);
+      _updateKey.currentState!.save();
+      setState(() {
+        isTracking = false;
+        takingMapScreenshot = true;
+      });
+      print("mapscreenshot value: $takingMapScreenshot");
+      print("runtitle value: $runTitle");
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+        null,
+      );
+      _location.enableBackgroundMode(enable: false);
 
-    Uint8List? mapScreenshot = await _mapController?.takeSnapshot();
-    String mapScreenshotRef = "screenshot(map)/${const Uuid().v4()}";
+      Uint8List? mapScreenshot = await _takeMapSnapshot();
+      Uint8List? darkMapScreenshot = await _takeMapSnapshot(Brightness.dark);
+      String mapScreenshotRef = "screenshot(map)/${const Uuid().v4()}";
+      String darkMapScreenshotRef = "screenshot(map)/${const Uuid().v4()}";
 
-    int dateTimeStamp = DateTime.now().millisecondsSinceEpoch;
+      int dateTimeStamp = DateTime.now().millisecondsSinceEpoch;
 
-    RunModel runModel = RunModel(
-        id: '',
-        email: AuthRepository().getCurrentUser()!.email!,
-        runTitle: runTitle,
-        mapScreenshot: mapScreenshotRef,
-        timeTakenInMilliseconds: _time!,
-        distanceRanInMetres: _dist,
-        averageSpeed: _speed,
-        timestamp: dateTimeStamp);
+      RunModel runModel = RunModel(
+          id: '',
+          email: AuthRepository().getCurrentUser()!.email!,
+          runTitle: runTitle,
+          mapScreenshot: mapScreenshotRef,
+          darkMapScreenshot: darkMapScreenshotRef,
+          timeTakenInMilliseconds: _time!,
+          distanceRanInMetres: _dist,
+          averageSpeed: _speed,
+          timestamp: dateTimeStamp);
 
-    bool waitingForInsert =
-        await RunRepository.instance().insertRun(runModel, mapScreenshot!);
+      bool waitingForInsert =
+      await RunRepository.instance().insertRun(runModel, mapScreenshot!, darkMapScreenshot!);
 
-    if (!waitingForInsert) {
-      return SnackbarUtils(context: context)
-          .createSnackbar('Unknown Error has occurred');
+      if (!waitingForInsert) {
+        return SnackbarUtils(context: context)
+            .createSnackbar('Unknown Error has occurred');
+      }
+      Navigator.pushReplacementNamed(
+        context,
+        BottomNavBar.routeName
+      );
+      setState(() {
+        isTracking = false;
+        isFirstTimeTracking = true;
+        takingMapScreenshot = false;
+      });
     }
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => BottomNavBar(),
-      ),
-    );
-    setState(() {
-      isTracking = false;
-      isFirstTimeTracking = true;
-      takingMapScreenshot = false;
-    });
   }
 
   void cancelRun(BuildContext context) {
@@ -263,11 +309,20 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
 
   final _runTitleController = TextEditingController();
 
+  void _configureMapType(BuildContext context) {
+    _mapController?.setMapStyle(
+      Theme.of(context).brightness == Brightness.dark
+          ? _darkMapStyle
+          : _lightMapStyle,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    _configureMapType(context);
     return Scaffold(
         appBar: AppBar(
-          title: Text("Run Tracker"),
+          title: Text("Run Tracker", style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
             if (!isTracking && !isFirstTimeTracking)
               IconButton(
@@ -292,7 +347,10 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
               child: GoogleMap(
             polylines: polyline,
             zoomControlsEnabled: false,
-            onMapCreated: _onMapCreated,
+            onMapCreated: (controller){
+              _onMapCreated(controller);
+              _configureMapType(context);
+            },
             myLocationEnabled: true,
             initialCameraPosition: CameraPosition(target: _center, zoom: 11),
           )),
@@ -338,7 +396,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             height: 140,
             padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
             decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.9), borderRadius: BorderRadius.circular(10)),
             child: Column(
               children: [
                 Row(

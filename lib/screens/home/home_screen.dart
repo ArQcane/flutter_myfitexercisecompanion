@@ -1,15 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/screens/home/runs_list_screen.dart';
 import 'package:flutter_myfitexercisecompanion/utils/snackbar.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
-import '../data/models/run_model.dart';
-import '../data/repositories/auth_repository.dart';
-import '../data/repositories/run_repository.dart';
+import '../../data/models/run_model.dart';
+import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/run_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   static String routeName = "/home";
@@ -20,31 +21,28 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
-  GlobalKey _parentKey = GlobalKey();
   GlobalKey<FormState> _updateKey = GlobalKey<FormState>();
   bool isLoading = false;
-  List<String> selectedRuns = [];
   final runTitleController = TextEditingController();
-  
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    runTitleController.addListener((){});
+    runTitleController.addListener(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Home', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: Stack(
-        key: _updateKey,
         children: [
           if (!isLoading)
             StreamBuilder<List<RunModel>>(
-              stream: RunRepository.instance().getRunList(
+              stream: RunRepository.instance().getLatestRun(
                 AuthRepository().getCurrentUser()!.email!,
               ),
               builder: _builder,
@@ -63,8 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
   Widget _builder(
     BuildContext context,
     AsyncSnapshot<List<RunModel>> snapshot,
@@ -77,19 +73,65 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!snapshot.hasData || snapshot.data!.isEmpty) {
       return _getNoRunsToDisplay();
     }
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      children: snapshot.data!.map((RunModel runModel) {
-        return _getListItem(
-          context,
-          runModel,
-        );
-      }).toList(),
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: Column(
+        children: [
+          SizedBox(
+            height: 430,
+            child: ListView(
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              children: snapshot.data!.map((RunModel runModel) {
+                return _getListItem(
+                  context,
+                  runModel,
+                );
+              }).toList(),
+            ),
+          ),
+          SizedBox(
+            height: 0,
+          ),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RunsListScreen(),
+                ),
+              );
+            },
+            child: Container(
+              height: 48,
+              margin: const EdgeInsets.all(16),
+              child: Container(
+                  alignment: Alignment.center,
+                  child: Text("Click here to see full list of runs recorded",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic))),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(16),
+                ),
+                border: Border.all(
+                  color: Colors.blue,
+                  width: 2,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _getListItem(BuildContext context, RunModel runModel) {
-    String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(DateTime.fromMillisecondsSinceEpoch(runModel.timestamp));
+    String formattedDate = DateFormat('yyyy-MM-dd – kk:mm')
+        .format(DateTime.fromMillisecondsSinceEpoch(runModel.timestamp));
     String? newRunTitle;
 
     return Padding(
@@ -97,119 +139,125 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Slidable(
         key: ValueKey(runModel.id),
         endActionPane: _getActionPane(runModel),
-        child: Form(
-          child: GestureDetector(
-            onTap: (){
-              print("runtitle value:${runModel.runTitle}");
-              showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: const Text("Update this Run?"),
-                  content: const Text(
-                    "Title of Run: ",
-                  ),
-                  actions: [
-                    TextFormField(
-                      initialValue: runModel.runTitle.toString(),
-                      onSaved: (value){
+        child: GestureDetector(
+          onTap: () {
+            print("runtitle value:${runModel.runTitle}");
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text("Update this Run?"),
+                content: const Text(
+                  "Title of Run: ",
+                ),
+                actions: [
+                  Form(
+                    key: _updateKey,
+                    child: TextFormField(
+                      initialValue: runModel.runTitle,
+                      onSaved: (value) {
                         newRunTitle = value;
                       },
                       validator: (value) {
-                        if (value! == "" || value == null)
+                        if (value == null || value.length < 4) {
                           return 'Please put a title that is atleast 4 letters long';
-                        else if(value.length < 4){
-                          return "Please put a title that is atleast 4 letters long";
-                        }
-                        else
+                        } else {
                           return null;
+                        }
                       },
                     ),
-                    ElevatedButton(
-                        onPressed: () async {
-                          FocusScope.of(context).unfocus();
-                            _updateKey.currentState!.save();
-                            try {
-                              await RunRepository.instance().updateRun([runModel.id], newRunTitle!);
-                              print("Working");
-                              Navigator.pop(context);
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("error: ${e.toString()}"),
-                                  action: SnackBarAction(
-                                    label: "OKAY",
-                                    onPressed: () {},
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
+                  ),
+                  ElevatedButton(
+                      onPressed: () async {
+                        FocusScope.of(context).unfocus();
+                        if (_updateKey.currentState?.validate() == true) {
+                          _updateKey.currentState!.save();
+                          try {
+                            await RunRepository.instance().updateRun(
+                                [runModel.id],
+                                newRunTitle ?? runModel.runTitle);
+                            print("Working");
+                            Navigator.pop(context);
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("error: ${e.toString()}"),
+                                action: SnackBarAction(
+                                  label: "OKAY",
+                                  onPressed: () {},
                                 ),
-                              );
-                            }
-                        },
-                        child: Text('Yes')),
-                    ElevatedButton(
-                      onPressed: (){Navigator.pop(context);},
-                      child: Text('No'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: Text('Yes')),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('No'),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: Stack(
+            children: [
+              Material(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                elevation: 5,
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        "Run Title: ${runModel.runTitle}",
+                        style: GoogleFonts.montserrat(
+                            textStyle:
+                                Theme.of(context).textTheme.headline5?.copyWith(
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                            decoration: TextDecoration.underline,
+                            decorationStyle: TextDecorationStyle.double),
+                      ),
                     ),
-                  ],
-                ),
-              );
-            },
-            child: Stack(
-              children: [
-                  Material(
-                    elevation: 5,
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                    child: Column(
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Recorded on: ${formattedDate}",
+                        style: GoogleFonts.montserrat(
+                          textStyle:
+                              Theme.of(context).textTheme.bodyText1?.copyWith(
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            "Run Title: ${runModel.runTitle}",
-                            style: GoogleFonts.montserrat(
-                                textStyle:
-                                    Theme.of(context).textTheme.headline5?.copyWith(
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                decoration: TextDecoration.underline,
-                                decorationStyle: TextDecorationStyle.double),
+                        SizedBox(
+                          width: 250,
+                          height: 350,
+                          child: Container(
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20))),
+                            child: _getImage(runModel),
                           ),
                         ),
                         Container(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Recorded on: ${formattedDate}",
-                            style: GoogleFonts.montserrat(
-                              textStyle: Theme.of(context).textTheme.bodyText1?.copyWith(
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 250,
-                              height: 350,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20))),
-                                child: _getImage(runModel),
-                              ),
-                            ),
-                            Container(
-                              child: _getDetails(runModel),
-                            ),
-                          ],
+                          child: _getDetails(runModel),
                         ),
                       ],
                     ),
-                  ),
-                _getOverlay(runModel.id),
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -224,20 +272,23 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             isLoading = true;
           });
-          try{
+          try {
             await RunRepository.instance().deleteRun([runModel.id]);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text("Successfully deleted the run"),
                 action: SnackBarAction(
                   label: "UNDO",
-                  onPressed: () { RunRepository.instance().undoDelete(runModel);},
+                  onPressed: () {
+                    RunRepository.instance().undoDelete(runModel);
+                  },
                 ),
                 behavior: SnackBarBehavior.floating,
               ),
             );
-          } catch (exception){
-            SnackbarUtils(context: context).createSnackbar("An error has occurred");
+          } catch (exception) {
+            SnackbarUtils(context: context)
+                .createSnackbar("An error has occurred");
           }
 
           setState(() {
@@ -251,20 +302,23 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               isLoading = true;
             });
-            try{
+            try {
               await RunRepository.instance().deleteRun([runModel.id]);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text("Successfully deleted the run"),
                   action: SnackBarAction(
                     label: "UNDO",
-                    onPressed: () { RunRepository.instance().undoDelete(runModel);},
+                    onPressed: () {
+                      RunRepository.instance().undoDelete(runModel);
+                    },
                   ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-            } catch (exception){
-              SnackbarUtils(context: context).createSnackbar("An error has occurred");
+            } catch (exception) {
+              SnackbarUtils(context: context)
+                  .createSnackbar("An error has occurred");
             }
             setState(() {
               isLoading = false;
@@ -282,8 +336,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _getImage(RunModel runModel) {
     return FutureBuilder<String>(
       future: RunRepository.instance().getImageURL(
-        runModel.mapScreenshot,
-      ),
+          Theme.of(context).brightness == Brightness.light
+              ? runModel.mapScreenshot
+              : runModel.darkMapScreenshot),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -292,7 +347,8 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         return Container(
           decoration: BoxDecoration(
-            border: Border.all(width: 2, color: Colors.deepOrangeAccent),
+            border: Border.all(
+                width: 2, color: Theme.of(context).colorScheme.primary),
             borderRadius: BorderRadius.circular(10),
           ),
           child: ClipRRect(
@@ -360,15 +416,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _getValue(BuildContext context, String value, String unit) {
     return SizedBox(
-      width: (300) / 3,
+      width: 330 / 3,
       child: Column(
         children: [
           Text(
             value,
             style: GoogleFonts.montserrat(
               textStyle: Theme.of(context).textTheme.headline6?.copyWith(
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  overflow: TextOverflow.ellipsis,
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
             ),
           ),
           Text(unit,
@@ -376,26 +434,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 textStyle: Theme.of(context)
                     .textTheme
                     .headline6
-                    ?.copyWith(fontSize: 14, color: Colors.deepOrangeAccent),
+                    ?.copyWith(fontSize: 14),
               )),
         ],
-      ),
-    );
-  }
-
-  Widget _getOverlay(String id) {
-    return Visibility(
-      visible: selectedRuns.contains(id),
-      child: Container(
-        alignment: Alignment.topRight,
-        padding: const EdgeInsets.all(5),
-        height: (100 - 20) / 2 + 60,
-        color: Theme.of(context).focusColor,
-        child: const Icon(
-          Icons.check_box,
-          color: Colors.blue,
-          size: 50,
-        ),
       ),
     );
   }

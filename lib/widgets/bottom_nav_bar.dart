@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 import '../screens/calorie_counter_screen.dart';
-import '../screens/home_screen.dart';
+import '../screens/home/home_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/tracking/run_tracker_screen.dart';
 
@@ -25,7 +25,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     return Scaffold(
         bottomNavigationBar: Container(
-          color: Colors.blueGrey.shade900,
+          color: Theme.of(context).colorScheme.surfaceVariant,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal:10.0,
                 vertical: 5.0),
@@ -35,10 +35,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
               haptic: true, // haptic feedback
               tabShadow: [BoxShadow(color: Colors.blueGrey.withOpacity(0.3), blurRadius: 5)], // tab button shadow
               iconSize: 24, // tab button icon size
-              backgroundColor: Colors.blueGrey.shade900,
+              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
               color: Colors.white,
               activeColor: Colors.white,
-              tabBackgroundColor: Colors.orange.shade800,
+              tabBackgroundColor: Theme.of(context).colorScheme.primary,
               duration: Duration(milliseconds: 500),
               curve: Curves.ease,
               gap: 8,

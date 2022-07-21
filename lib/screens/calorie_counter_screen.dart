@@ -12,7 +12,7 @@ class _CalorieCounterScreenState extends State<CalorieCounterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Calorie Counter"),
+        title: Text("Calorie Counter", style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

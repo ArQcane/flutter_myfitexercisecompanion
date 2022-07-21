@@ -31,14 +31,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   double? weight = 0.0;
   String? profilePic = "";
 
-  deleteAccount() async{
+  deleteAccount() async {
     try {
       await AuthRepository().login(
         AuthRepository().getCurrentUser()!.email!,
         password,
       );
       bool deleteImageResults =
-      await UserRepository.instance().deleteUserImage();
+          await UserRepository.instance().deleteUserImage();
       bool deleteUserResults = await UserRepository.instance().deleteUser();
       if (!deleteUserResults || !deleteImageResults) {
         return SnackbarUtils(context: context).createSnackbar(
@@ -72,7 +72,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    passwordController.addListener(() {password = passwordController.text;});
+    passwordController.addListener(() {
+      password = passwordController.text;
+    });
   }
 
   @override
@@ -92,157 +94,128 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height = _userDetail?.height;
             profilePic = _userDetail?.profilePic;
           }
-          if(snapshot.data == null){
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => MainScreen()));
+          if (snapshot.data == null) {
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => MainScreen()));
           }
-            return Scaffold(
-              body: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      height: 150,
-                      decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomRight: Radius.circular(50),
-                          ),
-                          color: Colors.deepOrangeAccent),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            top: 50,
-                            left: 0,
-                            child: Container(
-                              height: 80,
-                              width: 300,
-                              decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.only(
-                                    topRight: Radius.circular(50),
-                                    bottomRight: Radius.circular(50),
-                                  )),
-                            ),
-                          ),
-                          const Positioned(
-                            top: 75,
-                            left: 20,
-                            child: Text(
-                              'Your Profile',
-                              style: TextStyle(
-                                  fontSize: 28,
-                                  color: Colors.deepOrangeAccent,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
+          return Scaffold(
+            appBar: AppBar(
+              title: Text("Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    height: 48,
+                    margin: const EdgeInsets.all(16),
+                    child: Container(alignment: Alignment.center, child: Text("Welcome back, $username!", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, fontStyle: FontStyle.italic))),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(16),
+                      ),
+                      border: Border.all(
+                        color: Colors.blue,
+                        width: 2,
                       ),
                     ),
-                    Container(
-                      padding: EdgeInsets.only(
-                          bottom: 5, top: 5 // Space between underline and text
-                      ),
-                      decoration: BoxDecoration(
-                          border: Border(
-                              bottom: BorderSide(
-                                color: Colors.deepOrangeAccent,
-                                width: 1.0, // Underline thickness
-                              ))),
-                      child: Text(
-                        "Hello ${_userDetail?.username}",
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Colors.deepOrange,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 150,
+                          width: 150,
+                          child: Stack(
+                              fit: StackFit.expand,
+                              clipBehavior: Clip.none,
+                              children: [
+                                CircleAvatar(
+                                    radius: 50,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: snapshot.data?.profilePic != null
+                                          ? Image.network(
+                                              snapshot.data!.profilePic ?? "")
+                                          : Icon(Icons.person),
+                                    )),
+                              ]),
                         ),
-                      ),
+                      ],
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 150,
-                            width: 150,
-                            child: Stack(
-                                fit: StackFit.expand,
-                                clipBehavior: Clip.none,
-                                children: [
-                                  CircleAvatar(
-                                      radius: 50,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(50),
-                                        child: snapshot.data?.profilePic != null ? Image.network(snapshot.data!.profilePic ?? "") : Icon(Icons.person),
-                                      )),
-                                ]),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    ProfileMenu(
-                        icon: Icon(Icons.person_outline,
-                            color: Colors.deepOrange, size: 25),
-                        text: "Edit Account",
-                        press: () => Navigator.pushNamed(
-                            context, EditProfileScreen.routeName,)
-                    ),
-                    ProfileMenu(
-                      icon: Icon(Icons.logout_outlined,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  ProfileMenu(
+                      icon: Icon(Icons.person_outline,
                           color: Colors.deepOrange, size: 25),
-                      text: "Logout",
-                      press: () {
-                        logOut();
-                      },
+                      text: "Edit Account",
+                      press: () => Navigator.pushNamed(
+                            context,
+                            EditProfileScreen.routeName,
+                          )),
+                  ProfileMenu(
+                    icon: Icon(Icons.logout_outlined,
+                        color: Colors.deepOrange, size: 25),
+                    text: "Logout",
+                    press: () {
+                      logOut();
+                    },
+                  ),
+                  ProfileMenu(
+                    text: "Delete Account?",
+                    icon: Icon(
+                      Icons.delete_forever_outlined,
+                      color: Colors.deepOrange,
+                      size: 25,
                     ),
-                    ProfileMenu(
-                      text: "Delete Account?",
-                      icon: Icon(Icons.delete_forever_outlined, color: Colors.deepOrange, size: 25,),
-                      press: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) =>
-                              AlertDialog(
-                                title: Text('Delete Account?'),
-                                content: Text('Are you sure you want to delete your account permanently?'),
-                                actions: [
-                                  TextField(
-                                    controller: passwordController,
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        deleteAccount();
-                                      },
-                                      child: Text('Yes')),
-                                  ElevatedButton(
-                                    onPressed: (){Navigator.pop(context);},
-                                    child: Text('No'),
-                                  ),
-                                ],
-                              ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                    press: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('Delete Account?'),
+                          content: Text(
+                              'Are you sure you want to delete your account permanently?'),
+                          actions: [
+                            TextField(
+                              controller: passwordController,
+                            ),
+                            ElevatedButton(
+                                onPressed: () {
+                                  deleteAccount();
+                                },
+                                child: Text('Yes')),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('No'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
-            );
-          });
+            ),
+          );
+        });
   }
 }
 
-
 class ShowDialog extends StatefulWidget {
-
   @override
   State<ShowDialog> createState() => _ShowDialogState();
 }
 
 class _ShowDialogState extends State<ShowDialog> {
-
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -251,24 +224,26 @@ class _ShowDialogState extends State<ShowDialog> {
         content: Text('Are you sure you want to delete your account?'),
         actions: [
           TextButton(
-            onPressed: () {
-
-            },
-            child: Text('YES', style: TextStyle(color: Colors.black),),
+            onPressed: () {},
+            child: Text(
+              'YES',
+              style: TextStyle(color: Colors.black),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text('NO', style: TextStyle(color: Colors.black),),
+            child: Text(
+              'NO',
+              style: TextStyle(color: Colors.black),
+            ),
           ),
         ],
       ),
     );
   }
 }
-
-
 
 class ProfileMenu extends StatelessWidget {
   const ProfileMenu({
@@ -289,7 +264,7 @@ class ProfileMenu extends StatelessWidget {
       child: FlatButton(
         padding: EdgeInsets.all(20),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: Colors.grey.shade100,
+        color: Theme.of(context).colorScheme.surface,
         onPressed: press,
         child: Row(
           children: [

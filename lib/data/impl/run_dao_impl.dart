@@ -53,15 +53,33 @@ class RunDaoImpl implements RunDao {
   }
 
   @override
+  Stream<List<RunModel>> getLatestRun(String email){
+    return _firestore
+        .collection("runs")
+        .where('email', isEqualTo: email)
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map((document) => RunModel.fromMap(document))
+          .toList(),
+    );
+  }
+
+  @override
   Future<bool> insertRun(
       RunModel runModel,
       Uint8List mapScreenshot,
+      Uint8List darkMapScreenshot,
       ) async {
     try {
       await _reference.child(runModel.mapScreenshot).putData(mapScreenshot);
+      await _reference.child(runModel.darkMapScreenshot).putData(darkMapScreenshot);
       await _firestore.collection('runs').doc().set({
         'email': runModel.email,
         'mapScreenshot': runModel.mapScreenshot,
+        'darkMapScreenshot': runModel.darkMapScreenshot,
         'runTitle': runModel.runTitle,
         'timeTaken': runModel.timeTakenInMilliseconds,
         'distanceRan': runModel.distanceRanInMetres,
@@ -116,6 +134,7 @@ class RunDaoImpl implements RunDao {
       await _firestore.collection('runs').doc().set({
         'email': runModel.email,
         'mapScreenshot': runModel.mapScreenshot,
+        'darkMapScreenshot': runModel.darkMapScreenshot,
         'runTitle': runModel.runTitle,
         'timeTaken': runModel.timeTakenInMilliseconds,
         'distanceRan': runModel.distanceRanInMetres,

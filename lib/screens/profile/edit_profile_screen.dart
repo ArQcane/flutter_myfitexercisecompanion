@@ -140,6 +140,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background.withOpacity(0.93),
       appBar: AppBar(
         title: Text('Edit Profile'),
         actions: [
@@ -154,7 +155,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           stream: UserRepository.instance().getUserStream(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || isUploading) {
-              return LoadingCircle();
+              return LoadingCircle(overlayVisibility: true,);
             }
             if (snapshot.hasData) {
               _userDetail = snapshot.data;
@@ -360,8 +361,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               padding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
-                  side: BorderSide(color: Colors.orangeAccent)),
-              color: Color(0xFFF5F6F9),
+                  side: BorderSide(color: Theme.of(context).colorScheme.primary)),
+              color: Theme.of(context).colorScheme.background,
               onPressed: () async {
                 await UserRepository.instance().deleteUserImage();
               },
@@ -379,8 +380,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               padding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
-                  side: BorderSide(color: Colors.orangeAccent)),
-              color: Color(0xFFF5F6F9),
+                  side: BorderSide(color: Theme.of(context).colorScheme.primary)),
+              color: Theme.of(context).colorScheme.background,
               onPressed: () {
                 _pickImage(ImageSource.gallery);
               },

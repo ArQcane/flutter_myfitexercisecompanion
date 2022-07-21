@@ -18,11 +18,16 @@ class RunRepository{
     return _runDao.getRunList(email);
   }
 
+  Stream<List<RunModel>> getLatestRun(String email){
+    return _runDao.getLatestRun(email);
+  }
+
   Future<bool> insertRun(
       RunModel runModel,
       Uint8List mapScreenshot,
+      Uint8List darkMapScreenshot,
       ) {
-    return _runDao.insertRun(runModel, mapScreenshot);
+    return _runDao.insertRun(runModel, mapScreenshot, darkMapScreenshot);
   }
 
   Future<bool> updateRun(List<String> idList, String newTitle) {
