@@ -20,9 +20,22 @@ class RunDaoImpl implements RunDao {
   }
 
   @override
-  Future<bool> deleteRun(String id) {
-    // TODO: implement deleteRun
-    throw UnimplementedError();
+  Future<bool> deleteRun(List<String> idList) async {
+    try {
+      WriteBatch batch = _firestore.batch();
+      for (String id in idList) {
+        DocumentSnapshot<Map<String, dynamic>> document =
+            await _firestore.collection('runs').doc(id).get();
+        batch.delete(document.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (e) {
+      print(e);
+      if (e is! FirebaseException) return false;
+      print(e.message.toString());
+      return false;
+    }
   }
 
   @override
@@ -30,30 +43,13 @@ class RunDaoImpl implements RunDao {
     return _firestore
         .collection("runs")
         .where('email', isEqualTo: email)
-        .orderBy('timeStarted')
+        .orderBy('timestamp', descending: true)
         .snapshots()
-        .asyncMap(
-          (snapshot) async => await _convertToList(snapshot),
+        .map(
+          (snapshot) => snapshot.docs
+          .map((document) => RunModel.fromMap(document))
+          .toList(),
     );
-  }
-
-  Future<List<RunModel>> _convertToList(
-      QuerySnapshot<Map<String, dynamic>> querySnapshot,
-      ) async {
-    List<DocumentSnapshot<Map<String, dynamic>>> docList = querySnapshot.docs;
-    List<RunModel> runList = [];
-    for (var document in docList) {
-      runList.add(
-        RunModel.fromMap(
-          document,
-          await _getDownloadUrl(document["mapScreenshot"]),
-        ),
-      );
-    }
-    return runList;
-  }
-  Future<String> _getDownloadUrl(String child) async {
-    return await _reference.child(child).getDownloadURL();
   }
 
   @override
@@ -66,9 +62,11 @@ class RunDaoImpl implements RunDao {
       await _firestore.collection('runs').doc().set({
         'email': runModel.email,
         'mapScreenshot': runModel.mapScreenshot,
+        'runTitle': runModel.runTitle,
         'timeTaken': runModel.timeTakenInMilliseconds,
         'distanceRan': runModel.distanceRanInMetres,
         'averageSpeed': runModel.averageSpeed,
+        'timestamp' : runModel.timestamp
       });
       return true;
     } catch (e) {
@@ -79,8 +77,55 @@ class RunDaoImpl implements RunDao {
 
 
   @override
-  Future<bool> updateRun(String id, Map<String, dynamic> newValues) {
-    // TODO: implement updateRun
-    throw UnimplementedError();
+  Future<bool> updateRun(List<String> idList, String newTitle) async {
+    try{
+      for (String id in idList) {
+        await _firestore.collection('runs').doc(id).update({
+          'runTitle': newTitle
+        });
+      }
+      return true;
+    } catch(e){
+      print((e as FirebaseException).message.toString());
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> deleteAllRunsOnAcc(String email) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> allRuns = await _firestore
+          .collection('runs')
+          .where('email', isEqualTo: email)
+          .get();
+      WriteBatch batch = _firestore.batch();
+      for (var doc in allRuns.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (e) {
+      print(e.toString());
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> undoDelete(RunModel runModel) async {
+    try{
+      await _firestore.collection('runs').doc().set({
+        'email': runModel.email,
+        'mapScreenshot': runModel.mapScreenshot,
+        'runTitle': runModel.runTitle,
+        'timeTaken': runModel.timeTakenInMilliseconds,
+        'distanceRan': runModel.distanceRanInMetres,
+        'averageSpeed': runModel.averageSpeed,
+        'timestamp' : runModel.timestamp
+      });
+      return true;
+    } catch (e) {
+      print((e as FirebaseException).message.toString());
+      return false;
+    }
   }
 }

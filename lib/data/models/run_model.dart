@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class RunModel{
   String id, email, runTitle, mapScreenshot;
   double distanceRanInMetres, averageSpeed;
-  int timeTakenInMilliseconds;
+  int timeTakenInMilliseconds, timestamp;
 
   RunModel({
     required this.id,
@@ -13,18 +13,19 @@ class RunModel{
     required this.timeTakenInMilliseconds,
     required this.distanceRanInMetres,
     required this.averageSpeed,
+    required this.timestamp,
   });
 
   RunModel.fromMap(
       DocumentSnapshot<Map<String, dynamic>> document,
-      String mapScreenshot,
       ) : this(
     id: document.id,
     email: document["email"],
     runTitle: document['runTitle'],
-    mapScreenshot: mapScreenshot,
+    mapScreenshot: document['mapScreenshot'],
     timeTakenInMilliseconds: document["timeTaken"],
     distanceRanInMetres: document["distanceRan"],
     averageSpeed: document["averageSpeed"],
+    timestamp: document["timestamp"],
   );
 }

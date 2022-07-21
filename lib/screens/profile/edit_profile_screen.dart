@@ -167,134 +167,228 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               padding: EdgeInsets.all(10),
               child: Form(
                 key: form, //assigning the form to the key
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  height: 115,
-                                  width: 115,
-                                  child: Stack(
-                                      fit: StackFit.expand,
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        CircleAvatar(
-                                            radius: 50,
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(50),
-                                              child: Image.network(profilePic),
-                                            )),
-                                        Positioned(
-                                          bottom: 0,
-                                          right: -15,
-                                          child: SizedBox(
-                                            height: 46,
-                                            width: 46,
-                                            child: FlatButton(
-                                              padding: EdgeInsets.zero,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(50),
-                                                  side: BorderSide(
-                                                      color:
-                                                          Colors.orangeAccent)),
-                                              color: Color(0xFFF5F6F9),
-                                              onPressed: () {
-                                                _pickImage(ImageSource.gallery);
-                                              },
-                                              child: Icon(Icons.camera_alt),
-                                            ),
-                                          ),
-                                        ),
-                                      ]),
-                                ),
-                              ],
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    height: 120,
+                                    width: 120,
+                                    child: Stack(
+                                        fit: StackFit.expand,
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          CircleAvatar(
+                                              radius: 50,
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(50),
+                                                child: profilePic != ''
+                                                    ? Image.network(profilePic)
+                                                    : Icon(Icons.person),
+                                              )),
+                                          profilePic == ''
+                                              ? Positioned(
+                                                  bottom: 0,
+                                                  right: -15,
+                                                  child: SizedBox(
+                                                    height: 46,
+                                                    width: 46,
+                                                    child: FlatButton(
+                                                      padding: EdgeInsets.zero,
+                                                      shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(50),
+                                                          side: BorderSide(
+                                                              color: Colors
+                                                                  .orangeAccent)),
+                                                      color: Color(0xFFF5F6F9),
+                                                      onPressed: () {
+                                                        _pickImage(ImageSource
+                                                            .gallery);
+                                                      },
+                                                      child: Icon(
+                                                          Icons.camera_alt),
+                                                    ),
+                                                  ),
+                                                )
+                                              : actionsWidget(context)
+                                        ]),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    TextFormField(
-                      initialValue: _userDetail?.email,
-                      decoration:
-                          InputDecoration(label: Text("Email Registered")),
-                      onSaved: (value) {
-                        email = value;
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return "Please provide a valid email address";
-                        } else
-                          return null;
-                      },
-                    ),
-                    TextFormField(
-                      initialValue: snapshot.data?.username,
-                      decoration: InputDecoration(label: Text("Username")),
-                      validator: (value) {
-                        if (value == null) {
-                          return "Please enter a username";
-                        }
-                        if (value.length < 5) {
-                          return "Please include a username longer than 5 letters long";
-                        } else {
-                          return null;
-                        }
-                      },
-                      onSaved: (value) {
-                        username = value;
-                      },
-                    ),
-                    TextFormField(
-                      initialValue: _userDetail?.height.toStringAsFixed(2),
-                      decoration: InputDecoration(label: Text("Height")),
-                      validator: (value) {
-                        if (value == null) {
-                          return "Please provide your height in cm.";
-                        } else if (double.tryParse(value) == null) {
-                          return "Please provide a valid height.";
-                        } else if (double.tryParse(value)! < 100) {
-                          return "Please provide a height that is above 100cm";
-                        } else
-                          return null;
-                      },
-                      keyboardType: TextInputType.number,
-                      onSaved: (value) {
-                        height = double.parse(value!);
-                      },
-                    ),
-                    TextFormField(
-                      initialValue: _userDetail?.weight.toStringAsFixed(2),
-                      decoration: InputDecoration(label: Text("Weight")),
-                      validator: (value) {
-                        if (value == null) {
-                          return "Please provide your weight in kg.";
-                        } else if (double.tryParse(value) == null) {
-                          return "Please provide a valid weight.";
-                        } else if (double.tryParse(value)! < 40) {
-                          return "Please provide a weight that is humanly possible";
-                        } else
-                          return null;
-                      },
-                      keyboardType: TextInputType.number,
-                      onSaved: (value) {
-                        weight = double.parse(value!);
-                      },
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: TextFormField(
+                          readOnly: true,
+                          enabled: false,
+                          initialValue: _userDetail?.email,
+                          decoration: InputDecoration(
+                            label: Text("Email Registered"),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            icon: Icon(Icons.email),
+                          ),
+                          onSaved: (value) {
+                            email = value;
+                          },
+                          validator: (value) {
+                            if (value == null) {
+                              return "Please provide a valid email address";
+                            } else
+                              return null;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          initialValue: snapshot.data?.username,
+                          decoration: InputDecoration(
+                            label: Text("Username"),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            icon: Icon(Icons.drive_file_rename_outline_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null) {
+                              return "Please enter a username";
+                            }
+                            if (value.length < 5) {
+                              return "Please include a username longer than 5 letters long";
+                            } else {
+                              return null;
+                            }
+                          },
+                          onSaved: (value) {
+                            username = value;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          initialValue: _userDetail?.height.toStringAsFixed(2),
+                          decoration: InputDecoration(
+                            label: Text("Height"),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            icon: Icon(Icons.height),
+                          ),
+                          validator: (value) {
+                            if (value == null) {
+                              return "Please provide your height in cm.";
+                            } else if (double.tryParse(value) == null) {
+                              return "Please provide a valid height.";
+                            } else if (double.tryParse(value)! < 100) {
+                              return "Please provide a height that is above 100cm";
+                            } else
+                              return null;
+                          },
+                          keyboardType: TextInputType.number,
+                          onSaved: (value) {
+                            height = double.parse(value!);
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          initialValue: _userDetail?.weight.toStringAsFixed(2),
+                          decoration: InputDecoration(
+                            label: Text("Weight"),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            icon: Icon(Icons.monitor_weight_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null) {
+                              return "Please provide your weight in kg.";
+                            } else if (double.tryParse(value) == null) {
+                              return "Please provide a valid weight.";
+                            } else if (double.tryParse(value)! < 40) {
+                              return "Please provide a weight that is humanly possible";
+                            } else
+                              return null;
+                          },
+                          keyboardType: TextInputType.number,
+                          onSaved: (value) {
+                            weight = double.parse(value!);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
           }),
+    );
+  }
+
+  Widget actionsWidget(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          bottom: 0,
+          left: -15,
+          child: SizedBox(
+            height: 46,
+            width: 46,
+            child: FlatButton(
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  side: BorderSide(color: Colors.orangeAccent)),
+              color: Color(0xFFF5F6F9),
+              onPressed: () async {
+                await UserRepository.instance().deleteUserImage();
+              },
+              child: Icon(Icons.delete_forever),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: -15,
+          child: SizedBox(
+            height: 46,
+            width: 46,
+            child: FlatButton(
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  side: BorderSide(color: Colors.orangeAccent)),
+              color: Color(0xFFF5F6F9),
+              onPressed: () {
+                _pickImage(ImageSource.gallery);
+              },
+              child: Icon(Icons.camera_alt),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
