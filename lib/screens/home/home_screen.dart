@@ -38,25 +38,28 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text('Home', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: Stack(
-        children: [
-          if (!isLoading)
-            StreamBuilder<List<RunModel>>(
-              stream: RunRepository.instance().getLatestRun(
-                AuthRepository().getCurrentUser()!.email!,
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Stack(
+          children: [
+            if (!isLoading)
+              StreamBuilder<List<RunModel>>(
+                stream: RunRepository.instance().getLatestRun(
+                  AuthRepository().getCurrentUser()!.email!,
+                ),
+                builder: _builder,
               ),
-              builder: _builder,
-            ),
-          if (isLoading)
-            Container(
-              color: Theme.of(context).colorScheme.surface,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.blue,
+            if (isLoading)
+              Container(
+                color: Theme.of(context).colorScheme.surface,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.blue,
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -73,59 +76,75 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!snapshot.hasData || snapshot.data!.isEmpty) {
       return _getNoRunsToDisplay();
     }
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Column(
-        children: [
-          SizedBox(
-            height: 430,
-            child: ListView(
-              shrinkWrap: true,
-              physics: const BouncingScrollPhysics(),
-              children: snapshot.data!.map((RunModel runModel) {
-                return _getListItem(
-                  context,
-                  runModel,
-                );
-              }).toList(),
+    return Column(
+      children: [
+        Container(
+          height: 48,
+          margin: const EdgeInsets.all(16),
+          child: Container(
+              alignment: Alignment.center,
+              child: Text("Your Most Recent Run",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,))),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(16),
+            ),
+            border: Border.all(
+              color: Colors.deepPurple,
+              width: 2,
             ),
           ),
-          SizedBox(
-            height: 0,
-          ),
-          InkWell(
-            onTap: () {
-              Navigator.push(
+        ),
+        SizedBox(
+          height: 430,
+          child: ListView(
+            shrinkWrap: true,
+            children: snapshot.data!.map((RunModel runModel) {
+              return _getListItem(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => RunsListScreen(),
-                ),
+                runModel,
               );
-            },
+            }).toList(),
+          ),
+        ),
+        SizedBox(
+          height: 0,
+        ),
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RunsListScreen(),
+              ),
+            );
+          },
+          child: Container(
+            height: 48,
+            margin: const EdgeInsets.all(16),
             child: Container(
-              height: 48,
-              margin: const EdgeInsets.all(16),
-              child: Container(
-                  alignment: Alignment.center,
-                  child: Text("Click here to see full list of runs recorded",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic))),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(16),
-                ),
-                border: Border.all(
-                  color: Colors.blue,
-                  width: 2,
-                ),
+                alignment: Alignment.center,
+                child: Text("Click here to see full list of runs recorded",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic))),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(16),
+              ),
+              border: Border.all(
+                color: Colors.blue,
+                width: 2,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -141,7 +160,6 @@ class _HomeScreenState extends State<HomeScreen> {
         endActionPane: _getActionPane(runModel),
         child: GestureDetector(
           onTap: () {
-            print("runtitle value:${runModel.runTitle}");
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
@@ -175,7 +193,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             await RunRepository.instance().updateRun(
                                 [runModel.id],
                                 newRunTitle ?? runModel.runTitle);
-                            print("Working");
                             Navigator.pop(context);
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
