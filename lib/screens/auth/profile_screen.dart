@@ -1,18 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_myfitexercisecompanion/screens/edit_profile_screen.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
+import 'package:flutter_myfitexercisecompanion/screens/auth/login_screen.dart';
+import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 
-import '../main.dart';
-import '../models/user.dart';
-import '../services/auth_service.dart';
-import '../services/firestore_service.dart';
+import '../../data/repositories/firestore_service.dart';
+import '../../main.dart';
+import '../profile/edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   static String routeName = "/profile";
-
-  User currentUser;
-
-  ProfileScreen(this.currentUser);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -20,50 +19,50 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   FirestoreService fsService = FirestoreService();
-  AuthService authService = AuthService();
 
   final passwordController = TextEditingController();
 
   String? password;
 
+  UserDetail? _userDetail;
+  String? username = "";
+  double? height = 0.0;
+  double? weight = 0.0;
+  String? profilePic = "";
+
   deleteAccount() async{
     bool step1 = true ;
     bool step2 = false ;
     bool step3 = false ;
-    bool step4 = false ;
     while(true){
 
       if(step1){
         //delete user info in the database
-        var user = authService.getCurrentUser();
-        var credential = EmailAuthProvider.credential(email: authService.getCurrentUser()!.email.toString(), password: password!);
+        var user = AuthRepository().getCurrentUser();
+        var credential = EmailAuthProvider.credential(email: AuthRepository().getCurrentUser()!.email.toString(), password: password!);
         await user?.reauthenticateWithCredential(credential);
-        await fsService.deleteCurrentFirestoreUser(authService.getCurrentUser()!.email);
+        await UserRepository.instance().deleteUser();
         step1 = false;
         step2 = true;
       }
 
       if(step2){
         //delete user
-        authService.getCurrentUser()!.delete();
+        AuthRepository().getCurrentUser()?.delete();
         step2 = false ;
         step3 = true;
       }
 
       if(step3){
-        await authService.logOut();
+        await AuthRepository().logOut();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => MainScreen()),
+        );
         step3 = false;
-        step4 = true ;
-
       }
 
-      if(step4){
-        //go to sign up log in page
-        await Navigator.pushNamed(context, '/');
-        step4 = false ;
-      }
-
-      if(!step1 && !step2 && !step3 && !step4 ) {
+      if(!step1 && !step2 && !step3) {
         break;
       }
 
@@ -71,21 +70,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   logOut() {
-    return authService.logOut().then((value) {
-      FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Logout successfully!'),
-      ));
-      Navigator.pushReplacementNamed(context, MainScreen.routeName);
-    }).catchError((error) {
-      FocusScope.of(context).unfocus();
-      String message = error.toString();
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(message),
-      ));
-    });
+    AuthRepository().logOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => MainScreen()),
+    );
   }
 
   @override
@@ -97,15 +86,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<UserDetail>(
-        future: fsService
-            .getCurrentFirestoreUserData(authService.getCurrentUser()!.email),
+    return StreamBuilder<UserDetail?>(
+        stream: UserRepository.instance().getUserStream(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
+          if (!snapshot.hasData) {
+            return LoadingCircle(
+              overlayVisibility: false,
             );
-          } else {
+          }
+          if (snapshot.hasData) {
+            _userDetail = snapshot.data;
+            username = _userDetail?.username;
+            weight = _userDetail?.weight;
+            height = _userDetail?.height;
+            profilePic = _userDetail?.profilePic;
+          }
+          if(snapshot.data == null){
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => MainScreen()));
+          }
             return Scaffold(
               body: SingleChildScrollView(
                 child: Column(
@@ -150,15 +148,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       padding: EdgeInsets.only(
                           bottom: 5, top: 5 // Space between underline and text
-                          ),
+                      ),
                       decoration: BoxDecoration(
                           border: Border(
                               bottom: BorderSide(
-                        color: Colors.deepOrangeAccent,
-                        width: 1.0, // Underline thickness
-                      ))),
+                                color: Colors.deepOrangeAccent,
+                                width: 1.0, // Underline thickness
+                              ))),
                       child: Text(
-                        "Hello ${snapshot.data!.username}",
+                        "Hello ${_userDetail?.username}",
                         style: TextStyle(
                           fontSize: 24,
                           color: Colors.deepOrange,
@@ -184,8 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       radius: 50,
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(50),
-                                        child: Image.network(
-                                            snapshot.data!.profilePic),
+                                        child: snapshot.data?.profilePic != null ? Image.network(snapshot.data!.profilePic ?? "") : Icon(Icons.person),
                                       )),
                                   Positioned(
                                     bottom: 0,
@@ -197,7 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         padding: EdgeInsets.zero,
                                         shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(50),
+                                            BorderRadius.circular(50),
                                             side: BorderSide(
                                                 color: Colors.orangeAccent)),
                                         color: Color(0xFFF5F6F9),
@@ -219,8 +216,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: Colors.deepOrange, size: 25),
                         text: "Edit Account",
                         press: () => Navigator.pushNamed(
-                            context, EditProfileScreen.routeName,
-                            arguments: snapshot.data!)),
+                            context, EditProfileScreen.routeName,)
+                    ),
                     ProfileMenu(
                       icon: Icon(Icons.logout_outlined,
                           color: Colors.deepOrange, size: 25),
@@ -230,39 +227,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                     ),
                     ProfileMenu(
-                        text: "Delete Account?",
-                        icon: Icon(Icons.delete_forever_outlined, color: Colors.deepOrange, size: 25,),
-                        press: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) =>
-                                AlertDialog(
-                                  title: Text('Delete Account?'),
-                                  content: Text('Are you sure you want to delete your account permanently?'),
-                                  actions: [
-                                    TextField(
-                                      controller: passwordController,
-                                    ),
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          deleteAccount();
-                                        },
-                                        child: Text('Yes')),
-                                    ElevatedButton(
-                                        onPressed: (){Navigator.pop(context);},
-                                        child: Text('No'),
-                                    ),
-                                  ],
-                                ),
-                          );
-                        },
+                      text: "Delete Account?",
+                      icon: Icon(Icons.delete_forever_outlined, color: Colors.deepOrange, size: 25,),
+                      press: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) =>
+                              AlertDialog(
+                                title: Text('Delete Account?'),
+                                content: Text('Are you sure you want to delete your account permanently?'),
+                                actions: [
+                                  TextField(
+                                    controller: passwordController,
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        deleteAccount();
+                                      },
+                                      child: Text('Yes')),
+                                  ElevatedButton(
+                                    onPressed: (){Navigator.pop(context);},
+                                    child: Text('No'),
+                                  ),
+                                ],
+                              ),
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
             );
-          }
-        });
+          });
   }
 }
 
@@ -274,8 +270,6 @@ class ShowDialog extends StatefulWidget {
 }
 
 class _ShowDialogState extends State<ShowDialog> {
-  FirestoreService fsService = FirestoreService();
-  AuthService authService = AuthService();
 
   @override
   Widget build(BuildContext context) {

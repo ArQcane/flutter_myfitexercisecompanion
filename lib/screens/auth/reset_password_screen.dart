@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 
-import '../services/auth_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   static String routeName = '/reset-password';
@@ -16,8 +16,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     bool isValid = form.currentState!.validate();
     if (isValid) {
       form.currentState!.save();
-      AuthService authService = AuthService();
-      return authService.forgotPassword(email).then((value) {
+      return AuthRepository().forgotPassword(email).then((value) {
         FocusScope.of(context).unfocus();
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

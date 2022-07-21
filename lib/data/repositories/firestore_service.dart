@@ -1,11 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_myfitexercisecompanion/services/auth_service.dart';
-
-import '../models/user.dart';
 
 class FirestoreService {
-  AuthService authService = AuthService();
 
   Future<void> addUser(email, profilePic, username, height, weight) {
     return FirebaseFirestore.instance.collection('users').doc(email).set({
@@ -17,23 +12,6 @@ class FirestoreService {
     });
   }
 
-  Future<Object?> getCurrentFirestoreUser(email) async {
-    var documentSnapshot =
-        await FirebaseFirestore.instance.collection("users").doc(email).get();
-    if (documentSnapshot.exists) {
-      return documentSnapshot;
-    }
-    return null;
-  }
-
-  Future<UserDetail> getCurrentFirestoreUserData(email) async{
-    var collection = FirebaseFirestore.instance.collection('users');
-    var docSnapshot = await collection.doc(email).get();
-      Map<String, dynamic>? data = docSnapshot.data();
-
-      var currentUser = UserDetail.fromMap(data!);
-      return currentUser;
-  }
 
   Future<void> updateCurrentFirestoreUser(
       email, profilePic, username, height, weight) {

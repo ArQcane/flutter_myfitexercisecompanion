@@ -2,8 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/main.dart';
 
-import '../services/auth_service.dart';
-
 class HomeScreen extends StatefulWidget {
   static String routeName = "/home";
 

@@ -1,6 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
+import 'package:flutter_myfitexercisecompanion/screens/auth/user_add_details_screen.dart';
+import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 
-import '../services/auth_service.dart';
+import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/user_repository.dart';
 
 class LoginForm extends StatefulWidget {
   @override
@@ -10,34 +15,53 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   String? email;
   String? password;
-  var form = GlobalKey<FormState>();
+  bool isLoading = false;
+  var loginForm = GlobalKey<FormState>();
 
-  login() {
-    bool isValid = form.currentState!.validate();
-    if (isValid) {
-      form.currentState!.save();
-      AuthService authService = AuthService();
-      return authService.login(email, password).then((value) {
-        FocusScope.of(context).unfocus();
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Login successfully!'),
-        ));
-      }).catchError((error) {
-        FocusScope.of(context).unfocus();
-        String message = error.toString();
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(message),
-        ));
+  void submitForm() async {
+    FocusScope.of(context).unfocus();
+    if (loginForm.currentState?.validate() == true) {
+      setState(() {
+        isLoading = true;
       });
+      loginForm.currentState?.save();
+      try {
+        await AuthRepository().login(
+          email,
+          password,
+        );
+        loginForm.currentState?.reset();
+        UserDetail? user = await UserRepository.instance().getUser();
+        print("user details ${user}");
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pushReplacementNamed(
+          context,
+          user == null ? UserAddDetailsScreen.routeName : BottomNavBar.routeName,
+        );
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text((e as FirebaseException).message.toString()),
+            action: SnackBarAction(
+              label: "OKAY",
+              onPressed: () {},
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: form,
+      key: loginForm,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -93,7 +117,7 @@ class _LoginFormState extends State<LoginForm> {
           SizedBox(height: 20),
           ElevatedButton.icon(
             onPressed: () {
-              login();
+              submitForm();
             },
             icon: Icon(Icons.login),
             label: Text('Login'),
