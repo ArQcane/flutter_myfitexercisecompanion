@@ -8,7 +8,8 @@ import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 
 import '../../data/repositories/firestore_service.dart';
 import '../../main.dart';
-import '../profile/edit_profile_screen.dart';
+import '../../utils/snackbar.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   static String routeName = "/profile";
@@ -31,41 +32,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? profilePic = "";
 
   deleteAccount() async{
-    bool step1 = true ;
-    bool step2 = false ;
-    bool step3 = false ;
-    while(true){
-
-      if(step1){
-        //delete user info in the database
-        var user = AuthRepository().getCurrentUser();
-        var credential = EmailAuthProvider.credential(email: AuthRepository().getCurrentUser()!.email.toString(), password: password!);
-        await user?.reauthenticateWithCredential(credential);
-        await UserRepository.instance().deleteUser();
-        step1 = false;
-        step2 = true;
-      }
-
-      if(step2){
-        //delete user
-        AuthRepository().getCurrentUser()?.delete();
-        step2 = false ;
-        step3 = true;
-      }
-
-      if(step3){
-        await AuthRepository().logOut();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => MainScreen()),
+    try {
+      await AuthRepository().login(
+        AuthRepository().getCurrentUser()!.email!,
+        password,
+      );
+      bool deleteImageResults =
+      await UserRepository.instance().deleteUserImage();
+      bool deleteUserResults = await UserRepository.instance().deleteUser();
+      if (!deleteUserResults || !deleteImageResults) {
+        return SnackbarUtils(context: context).createSnackbar(
+          'Unknown error has occurred',
         );
-        step3 = false;
       }
-
-      if(!step1 && !step2 && !step3) {
-        break;
-      }
-
+      await AuthRepository().getCurrentUser()?.delete();
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MainScreen(),
+        ),
+      );
+    } catch (e) {
+      SnackbarUtils(context: context).createSnackbar(
+        'Wrong password has been given. Unable to delete account',
+      );
     }
   }
 
@@ -172,8 +163,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SizedBox(
-                            height: 115,
-                            width: 115,
+                            height: 150,
+                            width: 150,
                             child: Stack(
                                 fit: StackFit.expand,
                                 clipBehavior: Clip.none,
@@ -184,25 +175,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         borderRadius: BorderRadius.circular(50),
                                         child: snapshot.data?.profilePic != null ? Image.network(snapshot.data!.profilePic ?? "") : Icon(Icons.person),
                                       )),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: -15,
-                                    child: SizedBox(
-                                      height: 46,
-                                      width: 46,
-                                      child: FlatButton(
-                                        padding: EdgeInsets.zero,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                            BorderRadius.circular(50),
-                                            side: BorderSide(
-                                                color: Colors.orangeAccent)),
-                                        color: Color(0xFFF5F6F9),
-                                        onPressed: () {},
-                                        child: Icon(Icons.camera_alt),
-                                      ),
-                                    ),
-                                  ),
                                 ]),
                           ),
                         ],

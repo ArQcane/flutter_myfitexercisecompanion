@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -132,9 +133,9 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Account?'),
-        content:
-            Text('Are you sure you want to delete your account permanently?'),
+        title: Text('Save Run?'),
+        content: Text(
+            'Please enter the title of the run in order to save it under that name'),
         actions: [
           TextField(
             controller: _runTitleController,
@@ -170,8 +171,11 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
       null,
     );
     _location.enableBackgroundMode(enable: false);
+
     Uint8List? mapScreenshot = await _mapController?.takeSnapshot();
     String mapScreenshotRef = "screenshot(map)/${const Uuid().v4()}";
+
+    int dateTimeStamp = DateTime.now().millisecondsSinceEpoch;
 
     RunModel runModel = RunModel(
         id: '',
@@ -180,7 +184,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
         mapScreenshot: mapScreenshotRef,
         timeTakenInMilliseconds: _time!,
         distanceRanInMetres: _dist,
-        averageSpeed: _speed);
+        averageSpeed: _speed,
+        timestamp: dateTimeStamp);
 
     bool waitingForInsert =
         await RunRepository.instance().insertRun(runModel, mapScreenshot!);
@@ -195,6 +200,11 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
         builder: (_) => BottomNavBar(),
       ),
     );
+    setState(() {
+      isTracking = false;
+      isFirstTimeTracking = true;
+      takingMapScreenshot = false;
+    });
   }
 
   void cancelRun(BuildContext context) {

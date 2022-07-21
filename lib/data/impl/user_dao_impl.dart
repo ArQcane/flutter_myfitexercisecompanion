@@ -7,6 +7,8 @@ import 'package:flutter_myfitexercisecompanion/data/dao/user_dao.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:uuid/uuid.dart';
 
+import '../repositories/run_repository.dart';
+
 class UserDaoImpl implements UserDao{
   UserDaoImpl._internal();
   static final UserDaoImpl _userDaoImpl = UserDaoImpl._internal();
@@ -20,6 +22,7 @@ class UserDaoImpl implements UserDao{
   @override
   Future<bool> deleteUser() async {
     try {
+      RunRepository.instance().deleteAllRunsOnAcc(_firebaseAuth.currentUser!.email!);
       await _firestore
           .collection('users')
           .doc(_firebaseAuth.currentUser?.email)
@@ -37,10 +40,10 @@ class UserDaoImpl implements UserDao{
     try {
       String email = _firebaseAuth.currentUser!.email!;
       var doc = await _firestore.collection('users').doc(email).get();
-      if (doc.exists && doc.data()!.containsKey('profileImage')) {
-        await _reference.child(doc['profileImage']).delete();
+      if (doc.exists && doc.data()!.containsKey('profilePic')) {
+        await _reference.child(doc['profilePic']).delete();
         await _firestore.collection('users').doc(email).update({
-          'profileImage': FieldValue.delete(),
+          'profilePic': FieldValue.delete(),
         });
       }
       return Future.value(true);

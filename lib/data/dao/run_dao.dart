@@ -8,6 +8,10 @@ abstract class RunDao {
       RunModel runModel,
       Uint8List mapScreenshot,
       );
-  Future<bool> updateRun(String id, Map<String, dynamic> newValues);
-  Future<bool> deleteRun(String id);
+  Future<bool> updateRun(List<String> idList, String newTitle);
+  Future<bool> deleteRun(List<String> idList);
+  Future<bool> deleteAllRunsOnAcc(String email);
+  Future<bool> undoDelete(
+      RunModel runModel,
+      );
 }
