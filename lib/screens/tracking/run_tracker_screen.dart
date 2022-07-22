@@ -40,6 +40,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   bool isTracking = false;
   bool isFirstTimeTracking = true;
   bool takingMapScreenshot = false;
+  bool isLoading = true;
   String _darkMapStyle = '';
   String _lightMapStyle = '';
 
@@ -51,10 +52,13 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 500), (){
+    Future.delayed(const Duration(seconds: 2), (){
       _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
       _runTitleController.addListener(() {
         runTitle = _runTitleController.text;
+      });
+      setState((){
+        isLoading = false;
       });
     });
     _loadMapStyles();
@@ -76,6 +80,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    _configureMapType(context);
     _location.onLocationChanged.listen((event) {
       if (isTracking == false)
         return;
@@ -110,8 +115,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             _speed = (_dist / (_time! / 100)) * 3.6 * 10;
           });
         }
-
-        setState(() {
+        
+        setState((){
           for (var indivRoute in _runRoute) {
             polyline.add(Polyline(
                 polylineId: PolylineId(event.toString()),
@@ -120,7 +125,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
                 width: 5,
                 startCap: Cap.roundCap,
                 endCap: Cap.roundCap,
-                color: Theme.of(context).brightness == Brightness.light ? Colors.deepOrange : Colors.greenAccent));
+                color:  Colors.deepOrange));
           }
         });
       }
@@ -189,6 +194,9 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   Future<Uint8List?> _takeMapSnapshot([ //for taking ss of both dark and light mode to toggle
     Brightness brightness = Brightness.light,
   ]) async {
+    await Future.delayed(
+      const Duration(milliseconds: 500),
+    );
     _mapController?.setMapStyle(
       brightness == Brightness.light ? _lightMapStyle : _darkMapStyle,
     );
@@ -241,9 +249,9 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
         return SnackbarUtils(context: context)
             .createSnackbar('Unknown Error has occurred');
       }
-      Navigator.pushReplacementNamed(
+      Navigator.pushReplacement(
         context,
-        BottomNavBar.routeName
+        MaterialPageRoute(builder: (_) => BottomNavBar())
       );
       setState(() {
         isTracking = false;
@@ -343,13 +351,13 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
           ],
         ),
         body: Stack(children: [
+          if(isLoading = true) LoadingCircle(),
           Container(
               child: GoogleMap(
             polylines: polyline,
             zoomControlsEnabled: false,
             onMapCreated: (controller){
               _onMapCreated(controller);
-              _configureMapType(context);
             },
             myLocationEnabled: true,
             initialCameraPosition: CameraPosition(target: _center, zoom: 11),

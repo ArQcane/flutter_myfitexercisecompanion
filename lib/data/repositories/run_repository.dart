@@ -22,6 +22,10 @@ class RunRepository{
     return _runDao.getLatestRun(email);
   }
 
+  Stream<List<RunModel>> sortRunsByTypeList(String email, String sort){
+    return _runDao.sortRunsByTypeList(email, sort);
+  }
+
   Future<bool> insertRun(
       RunModel runModel,
       Uint8List mapScreenshot,

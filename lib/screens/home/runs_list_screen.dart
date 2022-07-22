@@ -7,6 +7,7 @@ import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import '../../data/models/run_model.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -23,6 +24,25 @@ class _RunsListScreen extends State<RunsListScreen> {
   GlobalKey<FormState> _updateKey = GlobalKey<FormState>();
   bool isLoading = false;
   final runTitleController = TextEditingController();
+  List<String> items = [
+    'timestamp',
+    'distanceRan',
+    'averageSpeed',
+    'timeTaken'
+  ];
+  String? selectedItem = 'timestamp';
+
+  Color get _baseColor {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey[600]!
+        : Colors.grey[300]!;
+  }
+
+  Color get _highlightColor {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey[100]!
+        : Colors.grey[50]!;
+  }
 
   @override
   void initState() {
@@ -41,19 +61,15 @@ class _RunsListScreen extends State<RunsListScreen> {
         children: [
           if (!isLoading)
             StreamBuilder<List<RunModel>>(
-              stream: RunRepository.instance().getRunList(
+              stream: RunRepository.instance().sortRunsByTypeList(
                 AuthRepository().getCurrentUser()!.email!,
+                selectedItem!,
               ),
               builder: _builder,
             ),
           if (isLoading)
-            Container(
-              color: Theme.of(context).colorScheme.surface,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.blue,
-                ),
-              ),
+            LoadingCircle(
+              overlayVisibility: true,
             ),
         ],
       ),
@@ -61,9 +77,9 @@ class _RunsListScreen extends State<RunsListScreen> {
   }
 
   Widget _builder(
-      BuildContext context,
-      AsyncSnapshot<List<RunModel>> snapshot,
-      ) {
+    BuildContext context,
+    AsyncSnapshot<List<RunModel>> snapshot,
+  ) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return LoadingCircle(
         overlayVisibility: false,
@@ -72,14 +88,49 @@ class _RunsListScreen extends State<RunsListScreen> {
     if (!snapshot.hasData || snapshot.data!.isEmpty) {
       return _getNoRunsToDisplay();
     }
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      children: snapshot.data!.map((RunModel runModel) {
-        return _getListItem(
-          context,
-          runModel,
-        );
-      }).toList(),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: SizedBox(
+            width: 250,
+            child: DropdownButtonFormField<String>(
+              icon: Icon(Icons.sort),
+              decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          width: 3,
+                          color: Theme.of(context).colorScheme.primary))),
+              value: selectedItem,
+              items: items
+                  .map(
+                    (item) => DropdownMenuItem<String>(
+                      child: Text(
+                        item,
+                        style: TextStyle(fontSize: 24),
+                      ),
+                      value: item,
+                    ),
+                  )
+                  .toList(),
+              onChanged: (item) => setState(() => selectedItem = item),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            children: snapshot.data!.map((RunModel runModel) {
+              return _getListItem(
+                context,
+                runModel,
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -170,9 +221,9 @@ class _RunsListScreen extends State<RunsListScreen> {
                         "Run Title: ${runModel.runTitle}",
                         style: GoogleFonts.montserrat(
                             textStyle:
-                            Theme.of(context).textTheme.headline5?.copyWith(
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                                Theme.of(context).textTheme.headline5?.copyWith(
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                             decoration: TextDecoration.underline,
                             decorationStyle: TextDecorationStyle.double),
                       ),
@@ -183,9 +234,9 @@ class _RunsListScreen extends State<RunsListScreen> {
                         "Recorded on: ${formattedDate}",
                         style: GoogleFonts.montserrat(
                           textStyle:
-                          Theme.of(context).textTheme.bodyText1?.copyWith(
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                              Theme.of(context).textTheme.bodyText1?.copyWith(
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -301,27 +352,18 @@ class _RunsListScreen extends State<RunsListScreen> {
                 width: 2, color: Theme.of(context).colorScheme.primary),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.network(
-              snapshot.data!,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                if (loadingProgress.expectedTotalBytes == null) {
-                  return Center(
-                    child: LoadingCircle(overlayVisibility: false),
-                  );
-                }
-                double percentLoaded = (loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!);
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: percentLoaded,
-                    color: Colors.blue,
-                  ),
-                );
-              },
-            ),
+          child: Image.network(
+            snapshot.data!,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Shimmer.fromColors(
+                child: Container(
+                  color: _baseColor,
+                ),
+                baseColor: _baseColor,
+                highlightColor: _highlightColor,
+              );
+            },
           ),
         );
       },
@@ -337,15 +379,15 @@ class _RunsListScreen extends State<RunsListScreen> {
           _getValue(
             context,
             (runModel.distanceRanInMetres > 1000
-                ? runModel.distanceRanInMetres / 1000
-                : runModel.distanceRanInMetres.toInt())
+                    ? runModel.distanceRanInMetres / 1000
+                    : runModel.distanceRanInMetres.toInt())
                 .toString(),
             runModel.distanceRanInMetres > 1000 ? 'Kilometres' : 'Metres',
           ),
           _getValue(
             context,
             StopWatchTimer.getDisplayTimeHours(
-                runModel.timeTakenInMilliseconds) +
+                    runModel.timeTakenInMilliseconds) +
                 ":" +
                 StopWatchTimer.getDisplayTimeMinute(
                     runModel.timeTakenInMilliseconds) +

@@ -362,7 +362,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                   side: BorderSide(color: Theme.of(context).colorScheme.primary)),
-              color: Theme.of(context).colorScheme.background,
+              color: Theme.of(context).colorScheme.surfaceTint,
               onPressed: () async {
                 await UserRepository.instance().deleteUserImage();
               },
@@ -381,7 +381,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
                   side: BorderSide(color: Theme.of(context).colorScheme.primary)),
-              color: Theme.of(context).colorScheme.background,
+              color: Theme.of(context).colorScheme.surfaceTint,
               onPressed: () {
                 _pickImage(ImageSource.gallery);
               },

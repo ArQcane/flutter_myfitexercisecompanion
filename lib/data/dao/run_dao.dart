@@ -5,6 +5,7 @@ import '../models/run_model.dart';
 abstract class RunDao {
   Stream<List<RunModel>> getRunList(String email);
   Stream<List<RunModel>> getLatestRun(String email);
+  Stream<List<RunModel>> sortRunsByTypeList(String email, String sort);
   Future<bool> insertRun(
       RunModel runModel,
       Uint8List mapScreenshot,

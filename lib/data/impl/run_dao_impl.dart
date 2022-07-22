@@ -68,6 +68,20 @@ class RunDaoImpl implements RunDao {
   }
 
   @override
+  Stream<List<RunModel>> sortRunsByTypeList(String email, String sort){
+    return _firestore
+        .collection("runs")
+        .where('email', isEqualTo: email)
+        .orderBy(sort, descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map((document) => RunModel.fromMap(document))
+          .toList(),
+    );
+  }
+
+  @override
   Future<bool> insertRun(
       RunModel runModel,
       Uint8List mapScreenshot,
