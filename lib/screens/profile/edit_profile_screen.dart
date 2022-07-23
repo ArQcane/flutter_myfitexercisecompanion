@@ -189,15 +189,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         fit: StackFit.expand,
                                         clipBehavior: Clip.none,
                                         children: [
-                                          CircleAvatar(
-                                              radius: 50,
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                                child: profilePic != ''
-                                                    ? Image.network(profilePic)
-                                                    : Icon(Icons.person),
-                                              )),
+                                          snapshot.data!.profilePic != null
+                                              ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(100),
+                                            child: Image.network(
+                                              snapshot.data!.profilePic!,
+                                            ),
+                                          )
+                                              : CircleAvatar(
+                                            child: Icon(Icons.person),
+                                          ),
                                           profilePic == ''
                                               ? Positioned(
                                                   bottom: 0,
@@ -214,7 +215,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                           side: BorderSide(
                                                               color: Colors
                                                                   .orangeAccent)),
-                                                      color: Color(0xFFF5F6F9),
+                                                      color: Theme.of(context).colorScheme.surfaceTint,
                                                       onPressed: () {
                                                         _pickImage(ImageSource
                                                             .gallery);

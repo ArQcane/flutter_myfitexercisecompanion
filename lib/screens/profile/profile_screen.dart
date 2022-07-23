@@ -93,6 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             weight = _userDetail?.weight;
             height = _userDetail?.height;
             profilePic = _userDetail?.profilePic;
+            print(profilePic);
           }
           if (snapshot.data == null) {
             Navigator.of(context)
@@ -100,7 +101,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
           return Scaffold(
             appBar: AppBar(
-              title: Text("Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text("Profile",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             body: SingleChildScrollView(
               child: Column(
@@ -108,7 +110,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     height: 48,
                     margin: const EdgeInsets.all(16),
-                    child: Container(alignment: Alignment.center, child: Text("Welcome back, $username!", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, fontStyle: FontStyle.italic))),
+                    child: Container(
+                        alignment: Alignment.center,
+                        child: Text("Welcome back, $username!",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                                fontStyle: FontStyle.italic))),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surface,
                       borderRadius: const BorderRadius.all(
@@ -135,15 +143,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fit: StackFit.expand,
                               clipBehavior: Clip.none,
                               children: [
-                                CircleAvatar(
-                                    radius: 50,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: snapshot.data?.profilePic != null
-                                          ? Image.network(
-                                              snapshot.data!.profilePic ?? "")
-                                          : Icon(Icons.person),
-                                    )),
+                                snapshot.data!.profilePic != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(100),
+                                        child: Image.network(
+                                          snapshot.data!.profilePic!,
+                                        ),
+                                      )
+                                    : CircleAvatar(
+                                        child: Icon(Icons.person),
+                                      )
                               ]),
                         ),
                       ],

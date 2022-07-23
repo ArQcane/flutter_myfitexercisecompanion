@@ -40,7 +40,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   bool isTracking = false;
   bool isFirstTimeTracking = true;
   bool takingMapScreenshot = false;
-  bool isLoading = true;
+  bool isLoading = false;
   String _darkMapStyle = '';
   String _lightMapStyle = '';
 
@@ -52,23 +52,18 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), (){
-      _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
-      _runTitleController.addListener(() {
-        runTitle = _runTitleController.text;
-      });
-      setState((){
-        isLoading = false;
-      });
+    _stopWatchTimer.onExecute.add(StopWatchExecute.stop);
+    _runTitleController.addListener(() {
+      runTitle = _runTitleController.text;
     });
     _loadMapStyles();
   }
 
   Future _loadMapStyles() async {
     _darkMapStyle =
-    await rootBundle.loadString('map_styles/map_dark_mode.json');
+        await rootBundle.loadString('map_styles/map_dark_mode.json');
     _lightMapStyle =
-    await rootBundle.loadString('map_styles/map_light_mode.json');
+        await rootBundle.loadString('map_styles/map_light_mode.json');
   }
 
   @override
@@ -115,8 +110,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             _speed = (_dist / (_time! / 100)) * 3.6 * 10;
           });
         }
-        
-        setState((){
+
+        setState(() {
           for (var indivRoute in _runRoute) {
             polyline.add(Polyline(
                 polylineId: PolylineId(event.toString()),
@@ -125,7 +120,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
                 width: 5,
                 startCap: Cap.roundCap,
                 endCap: Cap.roundCap,
-                color:  Colors.deepOrange));
+                color: Colors.deepOrange));
           }
         });
       }
@@ -162,14 +157,13 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             key: _updateKey,
             child: TextFormField(
               controller: _runTitleController,
-              onSaved: (value){
+              onSaved: (value) {
                 newRunTitle = value;
               },
               validator: (value) {
                 if (value == null || value.length < 4) {
                   return 'Please put a title that is atleast 4 letters long';
-                }
-                else {
+                } else {
                   return null;
                 }
               },
@@ -191,7 +185,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
     );
   }
 
-  Future<Uint8List?> _takeMapSnapshot([ //for taking ss of both dark and light mode to toggle
+  Future<Uint8List?> _takeMapSnapshot([
+    //for taking ss of both dark and light mode to toggle
     Brightness brightness = Brightness.light,
   ]) async {
     await Future.delayed(
@@ -209,7 +204,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   void saveRun() async {
     if (_runRoute.isEmpty || _runRoute[0].length < 2 || takingMapScreenshot)
       return;
-    if(_updateKey.currentState?.validate() == true){
+    if (_updateKey.currentState?.validate() == true) {
       Navigator.pop(context);
       _updateKey.currentState!.save();
       setState(() {
@@ -222,6 +217,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
         const Duration(milliseconds: 200),
         null,
       );
+
       _location.enableBackgroundMode(enable: false);
 
       Uint8List? mapScreenshot = await _takeMapSnapshot();
@@ -242,17 +238,15 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
           averageSpeed: _speed,
           timestamp: dateTimeStamp);
 
-      bool waitingForInsert =
-      await RunRepository.instance().insertRun(runModel, mapScreenshot!, darkMapScreenshot!);
+      bool waitingForInsert = await RunRepository.instance()
+          .insertRun(runModel, mapScreenshot!, darkMapScreenshot!);
 
       if (!waitingForInsert) {
         return SnackbarUtils(context: context)
             .createSnackbar('Unknown Error has occurred');
       }
       Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => BottomNavBar())
-      );
+          context, MaterialPageRoute(builder: (_) => BottomNavBar()));
       setState(() {
         isTracking = false;
         isFirstTimeTracking = true;
@@ -330,7 +324,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
     _configureMapType(context);
     return Scaffold(
         appBar: AppBar(
-          title: Text("Run Tracker", style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text("Run Tracker",
+              style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
             if (!isTracking && !isFirstTimeTracking)
               IconButton(
@@ -351,12 +346,12 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
           ],
         ),
         body: Stack(children: [
-          if(isLoading = true) LoadingCircle(),
+          if (isLoading = true) LoadingCircle(),
           Container(
               child: GoogleMap(
             polylines: polyline,
             zoomControlsEnabled: false,
-            onMapCreated: (controller){
+            onMapCreated: (controller) {
               _onMapCreated(controller);
             },
             myLocationEnabled: true,
@@ -404,7 +399,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
             height: 140,
             padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
             decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withOpacity(0.9), borderRadius: BorderRadius.circular(10)),
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(10)),
             child: Column(
               children: [
                 Row(

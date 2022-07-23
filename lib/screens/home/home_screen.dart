@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
+import 'package:flutter_myfitexercisecompanion/screens/chat/chats_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/home/runs_list_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/home/utils/speed_graphs.dart';
 import 'package:flutter_myfitexercisecompanion/utils/snackbar.dart';
@@ -27,6 +30,13 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = false;
   final runTitleController = TextEditingController();
 
+
+  UserDetail? _userDetail;
+  String? username = "";
+  double? height = 0.0;
+  double? weight = 0.0;
+  String? profilePic = "";
+
   Color get _baseColor {
     return Theme
         .of(context)
@@ -52,33 +62,55 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Home', style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
-      body: Stack(
-        children: [
-          if (!isLoading)
-            StreamBuilder<List<RunModel>>(
-              stream: RunRepository.instance().getLatestRun(
-                AuthRepository().getCurrentUser()!.email!,
-              ),
-              builder: _builder,
-            ),
-          if (isLoading)
-            Container(
-              color: Theme
-                  .of(context)
-                  .colorScheme
-                  .surface,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.blue,
+    return StreamBuilder<UserDetail?>(
+      stream: UserRepository.instance().getUserStream(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return LoadingCircle(
+            overlayVisibility: false,
+          );
+        }
+        if (snapshot.hasData) {
+          _userDetail = snapshot.data;
+          username = _userDetail?.username;
+          weight = _userDetail?.weight;
+          height = _userDetail?.height;
+          profilePic = _userDetail?.profilePic;
+        }
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Home', style: TextStyle(fontWeight: FontWeight.bold)),
+            actions: [
+              IconButton(onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ChatsScreen(_userDetail!)));
+              }, icon: Icon(Icons.chat))
+            ],
+          ),
+          body: Stack(
+            children: [
+              if (!isLoading)
+                StreamBuilder<List<RunModel>>(
+                  stream: RunRepository.instance().getLatestRun(
+                    AuthRepository().getCurrentUser()!.email!,
+                  ),
+                  builder: _builder,
                 ),
-              ),
-            ),
-        ],
-      ),
+              if (isLoading)
+                Container(
+                  color: Theme
+                      .of(context)
+                      .colorScheme
+                      .surface,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      }
     );
   }
 

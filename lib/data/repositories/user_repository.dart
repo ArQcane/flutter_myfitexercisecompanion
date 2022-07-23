@@ -26,6 +26,4 @@ class UserRepository{
       );
   Future<bool> deleteUser() => _userDao.deleteUser();
   Future<bool> deleteUserImage() => _userDao.deleteUserImage();
-
-  Future<DocumentSnapshot?> getCurrentFirestoreUser(email)=> _userDao.getCurrentFirestoreUser(email);
 }

@@ -88,10 +88,11 @@ class UserDaoImpl implements UserDao{
     );
   }
 
-  @override
+@override
   Future<bool> insertUser(UserDetail user) async {
     try {
       Map<String, dynamic> map = {
+        "email": user.email,
         "username": user.username,
         "height": user.height,
         "weight": user.weight,

@@ -55,6 +55,7 @@ dependencies:
   date_format: ^2.0.6
   intl: ^0.17.0
   shimmer: ^2.0.0
+  cached_network_image: ^3.2.1
 
 
 

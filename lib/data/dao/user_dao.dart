@@ -10,5 +10,5 @@ abstract class UserDao{
   Future<bool> updateUser(Map<String, dynamic> map, File? selectedImage);
   Future<bool> deleteUser();
   Future<bool> deleteUserImage();
-  Future<DocumentSnapshot?> getCurrentFirestoreUser(email);
+
 }
