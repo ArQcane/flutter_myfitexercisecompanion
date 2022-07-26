@@ -30,6 +30,8 @@ class _ChatsScreenState extends State<ChatsScreen> {
         : Colors.grey[50]!;
   }
 
+  String? profilePic;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,17 +70,15 @@ class _ChatsScreenState extends State<ChatsScreen> {
                         }
                         if (asyncSnapshot.hasData) {
                           var friend = asyncSnapshot.data;
+                          Map<String, dynamic> friendMap = asyncSnapshot.data.data();
                           return FutureBuilder<String?>(
                               future: FirebaseStorage.instance
                                   .ref()
-                                  .child(friend['profilePic'] ?? "")
+                                  .child(friendMap.containsKey('profilePic') ? friend['profilePic'] : "")
                                   .getDownloadURL(),
                               builder: (context, snapshot) {
                                 if(snapshot.connectionState == ConnectionState.waiting){
                                   return LoadingCircle(); //to add shimmer effect here
-                                }
-                                if(snapshot.hasError){
-                                  return LoadingCircle();
                                 }
                                 return ListTile(
                                   leading: ClipRRect(
@@ -104,8 +104,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                                         friend['username'],
                                                     friendEmail:
                                                         friend['email'],
-                                                    friendImage:
-                                                        friend['profilePic'])));
+                                                    friendImage:friendMap.containsKey('profilePic') ? friend['profilePic'] : "")));
                                   },
                                 );
                               });
