@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
-import 'package:flutter_myfitexercisecompanion/screens/calorie_counter_screen.dart';
+import 'package:flutter_myfitexercisecompanion/screens/calories/calorie_counter_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/home/home_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/profile/edit_profile_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/profile/profile_screen.dart';
@@ -13,6 +13,7 @@ import 'package:flutter_myfitexercisecompanion/screens/auth/login_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/auth/register_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/auth/reset_password_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/repositories/auth_repository.dart';
 
