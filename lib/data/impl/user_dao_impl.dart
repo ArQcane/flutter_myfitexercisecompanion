@@ -9,24 +9,42 @@ import 'package:uuid/uuid.dart';
 
 import '../repositories/run_repository.dart';
 
-class UserDaoImpl implements UserDao{
+class UserDaoImpl implements UserDao {
   UserDaoImpl._internal();
+
   static final UserDaoImpl _userDaoImpl = UserDaoImpl._internal();
+
   factory UserDaoImpl.instance() => _userDaoImpl;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final Reference _reference = FirebaseStorage.instance.ref();
 
-
   @override
   Future<bool> deleteUser() async {
     try {
-      RunRepository.instance().deleteAllRunsOnAcc(_firebaseAuth.currentUser!.email!);
-      await _firestore
-          .collection('users')
-          .doc(_firebaseAuth.currentUser?.email)
-          .delete();
+      RunRepository.instance()
+          .deleteAllRunsOnAcc(_firebaseAuth.currentUser!.email!);
+      // QuerySnapshot<Map<String, dynamic>> users = await _firestore
+      //     .collection('users')
+      //     .where('email', isEqualTo: _firebaseAuth.currentUser?.email)
+      //     .get();
+      // WriteBatch batch = _firestore.batch();
+      // for (var doc in users.docs) {
+      //   batch.delete(doc.reference);
+      // }
+      // await batch.commit();
+      WriteBatch batch = _firestore.batch();
+      await _firestore.collection('users').doc(_firebaseAuth.currentUser!.email!).get().then((querySnapshot) => {
+        batch.delete(querySnapshot.reference)
+          });
+      await _firestore.collection('users').doc(_firebaseAuth.currentUser!.email!).collection('messages').get().then((querySnapshot) => {
+        querySnapshot.docs.forEach((doc) => {batch.delete(doc.reference)})
+      });
+      await _firestore.collection('foodTracks').where('email', isEqualTo: _firebaseAuth.currentUser!.email!).get().then((querySnapshot) => {
+        querySnapshot.docs.forEach((doc) => {batch.delete(doc.reference)})
+      });
+      await batch.commit();
       await _firebaseAuth.currentUser?.delete();
       return Future.value(true);
     } catch (e) {
@@ -35,8 +53,15 @@ class UserDaoImpl implements UserDao{
     }
   }
 
+  // const carsList: Observable<firestore.QuerySnapshot> = await this.db.collection('cars', ref => ref.where('categoryId', '==', id)).get();
+  // const batch = this.db.firestore.batch();
+  // carsList.pipe(
+  // mergeMap(cars => cars.docs),
+  // map((car: QueryDocumentSnapshot) => batch.delete(car.ref))
+  // ).toPromise().then(() => batch.commit());
+
   @override
-  Future<bool> deleteUserImage() async{
+  Future<bool> deleteUserImage() async {
     try {
       String email = _firebaseAuth.currentUser!.email!;
       var doc = await _firestore.collection('users').doc(email).get();
@@ -78,7 +103,7 @@ class UserDaoImpl implements UserDao{
         .doc(_firebaseAuth.currentUser?.email)
         .snapshots()
         .asyncMap(
-          (doc) async {
+      (doc) async {
         if (_docChecker(doc)) return null;
         return UserDetail.fromDocument(
           doc,
@@ -88,7 +113,7 @@ class UserDaoImpl implements UserDao{
     );
   }
 
-@override
+  @override
   Future<bool> insertUser(UserDetail user) async {
     try {
       Map<String, dynamic> map = {
@@ -107,8 +132,8 @@ class UserDaoImpl implements UserDao{
 
   @override
   Future<bool> updateUser(Map<String, dynamic> map, File? selectedImage) async {
-    try{
-      if(selectedImage != null){
+    try {
+      if (selectedImage != null) {
         String imageFileName = const Uuid().v4();
         await _reference.child(imageFileName).putFile(selectedImage);
         map["profilePic"] = imageFileName;
@@ -125,28 +150,27 @@ class UserDaoImpl implements UserDao{
           .doc(_firebaseAuth.currentUser!.email)
           .update(map);
       return Future.value(true);
-      }
-      catch (exception){
-        print(exception.toString());
-        return Future.value(false);
+    } catch (exception) {
+      print(exception.toString());
+      return Future.value(false);
     }
   }
 
   bool _docChecker(DocumentSnapshot<Map<String, dynamic>> document) =>
       !document.exists ||
-          !document.data()!.containsKey('username') ||
-          !document.data()!.containsKey('height') ||
-          !document.data()!.containsKey('weight');
+      !document.data()!.containsKey('username') ||
+      !document.data()!.containsKey('height') ||
+      !document.data()!.containsKey('weight');
 
   Future<String?> _getProfilePicUrlString(
-      DocumentSnapshot<Map<String, dynamic>> document,
-      ) async {
+    DocumentSnapshot<Map<String, dynamic>> document,
+  ) async {
     String? profilePicUrlString;
     if (!document.data()!.containsKey('profilePic')) {
       return null;
     }
     profilePicUrlString =
-    await _reference.child(document['profilePic']).getDownloadURL();
+        await _reference.child(document['profilePic']).getDownloadURL();
     return profilePicUrlString;
   }
 
@@ -159,5 +183,4 @@ class UserDaoImpl implements UserDao{
     }
     return null;
   }
-
 }

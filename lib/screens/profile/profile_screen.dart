@@ -46,7 +46,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
       await AuthRepository().getCurrentUser()?.delete();
-      Navigator.pop(context);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
