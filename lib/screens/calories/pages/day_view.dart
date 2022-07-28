@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 
 import 'package:provider/provider.dart';
 
@@ -33,7 +34,7 @@ class _DayViewState extends State<DayViewScreen> {
   Color _leftArrowColor = Color(0xffC1C1C1);
   final _addFoodKey = GlobalKey<FormState>();
 
-  DatabaseService databaseService = new DatabaseService(
+  DatabaseService databaseService = DatabaseService(
       uid: "calorie-tracker-b7d17", currentDate: DateTime.now());
 
   late FoodTrackTask addFoodTrack;
@@ -49,7 +50,8 @@ class _DayViewState extends State<DayViewScreen> {
         fat: 0,
         mealTime: "",
         createdOn: _value,
-        grams: 0);
+        grams: 0,
+        email: AuthRepository().getCurrentUser()!.email!);
     databaseService.getFoodTrackData(DATABASE_UID);
   }
 
@@ -62,13 +64,14 @@ class _DayViewState extends State<DayViewScreen> {
         fat: 0,
         mealTime: "",
         createdOn: _value,
-        grams: 0);
+        grams: 0,
+        email: AuthRepository().getCurrentUser()!.email!);
   }
 
   Widget _calorieCounter() {
     return Padding(
       padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-      child: new Container(
+      child: Container(
         decoration: BoxDecoration(
             color: Colors.white,
             border: Border(
@@ -102,8 +105,8 @@ class _DayViewState extends State<DayViewScreen> {
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _value,
-      firstDate: new DateTime(2019),
-      lastDate: new DateTime.now(),
+      firstDate: DateTime(2019),
+      lastDate: DateTime.now(),
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -151,7 +154,7 @@ class _DayViewState extends State<DayViewScreen> {
                 onPressed: () async {
                   if (checkFormValid()) {
                     Navigator.pop(context);
-                    var random = new Random();
+                    var random = Random();
                     int randomMilliSecond = random.nextInt(1000);
                     addFoodTrack.createdOn = _value;
                     addFoodTrack.createdOn = addFoodTrack.createdOn
@@ -174,136 +177,138 @@ class _DayViewState extends State<DayViewScreen> {
   }
 
   Widget _showAmountHad() {
-    return new Scaffold(
-      body: Column(children: <Widget>[
-        _showAddFoodForm(),
-        _showUserAmount(),
-      ]),
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(children: <Widget>[
+          _showAddFoodForm(),
+          _showUserAmount(),
+        ]),
+      ),
     );
   }
 
   Widget _showAddFoodForm() {
     return Form(
       key: _addFoodKey,
-      child: Column(children: [
-        TextFormField(
-          decoration: const InputDecoration(
-              labelText: "Name *", hintText: "Please enter food name"),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please enter the food name";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            addFoodTrack.food_name = value;
+      child: SingleChildScrollView(
+        child: Column(children: [
+          TextFormField(
+            decoration: const InputDecoration(
+                labelText: "Name *", hintText: "Please enter food name"),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter the food name";
+              }
+              return null;
+            },
+            onChanged: (value) {
+              addFoodTrack.food_name = value;
 
-            // addFood.calories = value;
-          },
-        ),
-        TextFormField(
-          decoration: const InputDecoration(
-              labelText: "Calories *",
-              hintText: "Please enter a calorie amount"),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please enter a calorie amount";
-            }
-            return null;
-          },
-          keyboardType: TextInputType.number,
-          onChanged: (value) {
-            try {
-              addFoodTrack.calories = int.parse(value);
-            } catch (e) {
-              // return "Please enter numeric values"
-              addFoodTrack.calories = 0;
-            }
+              // addFood.calories = value;
+            },
+          ),
+          TextFormField(
+            decoration: const InputDecoration(
+                labelText: "Calories *",
+                hintText: "Please enter a calorie amount"),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter a calorie amount";
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            onChanged: (value) {
+              try {
+                addFoodTrack.calories = int.parse(value);
+              } catch (e) {
+                // return "Please enter numeric values"
+                addFoodTrack.calories = 0;
+              }
 
-            // addFood.calories = value;
-          },
-        ),
-        TextFormField(
-          decoration: const InputDecoration(
-              labelText: "Carbs *", hintText: "Please enter a carbs amount"),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please enter a carbs amount";
-            }
-            return null;
-          },
-          keyboardType: TextInputType.number,
-          onChanged: (value) {
-            try {
-              addFoodTrack.carbs = int.parse(value);
-            } catch (e) {
-              addFoodTrack.carbs = 0;
-            }
-          },
-        ),
-        TextFormField(
-          decoration: const InputDecoration(
-              labelText: "Protein *",
-              hintText: "Please enter a protein amount"),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please enter a calorie amount";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            try {
-              addFoodTrack.protein = int.parse(value);
-            } catch (e) {
-              addFoodTrack.protein = 0;
-            }
-          },
-        ),
-        TextFormField(
-          decoration: const InputDecoration(
-              labelText: "Fat *", hintText: "Please enter a fat amount"),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Please enter a fat amount";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            try {
-              addFoodTrack.fat = int.parse(value);
-            } catch (e) {
-              addFoodTrack.fat = 0;
-            }
-          },
-        ),
-      ]),
+              // addFood.calories = value;
+            },
+          ),
+          TextFormField(
+            decoration: const InputDecoration(
+                labelText: "Carbs *", hintText: "Please enter a carbs amount"),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter a carbs amount";
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            onChanged: (value) {
+              try {
+                addFoodTrack.carbs = int.parse(value);
+              } catch (e) {
+                addFoodTrack.carbs = 0;
+              }
+            },
+          ),
+          TextFormField(
+            decoration: const InputDecoration(
+                labelText: "Protein *",
+                hintText: "Please enter a protein amount"),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter a calorie amount";
+              }
+              return null;
+            },
+            onChanged: (value) {
+              try {
+                addFoodTrack.protein = int.parse(value);
+              } catch (e) {
+                addFoodTrack.protein = 0;
+              }
+            },
+          ),
+          TextFormField(
+            decoration: const InputDecoration(
+                labelText: "Fat *", hintText: "Please enter a fat amount"),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter a fat amount";
+              }
+              return null;
+            },
+            onChanged: (value) {
+              try {
+                addFoodTrack.fat = int.parse(value);
+              } catch (e) {
+                addFoodTrack.fat = 0;
+              }
+            },
+          ),
+        ]),
+      ),
     );
   }
 
   Widget _showUserAmount() {
-    return new Expanded(
-      child: new TextField(
-          maxLines: 1,
-          autofocus: true,
-          decoration: new InputDecoration(
-              labelText: 'Grams *',
-              hintText: 'eg. 100',
-              contentPadding: EdgeInsets.all(0.0)),
-          keyboardType: TextInputType.number,
-          inputFormatters: <TextInputFormatter>[
-            FilteringTextInputFormatter.digitsOnly
-          ],
-          onChanged: (value) {
-            try {
-              addFoodTrack.grams = int.parse(value);
-            } catch (e) {
-              addFoodTrack.grams = 0;
-            }
-            setState(() {
-              servingSize = double.tryParse(value) ?? 0;
-            });
-          }),
-    );
+    return TextField(
+        maxLines: 1,
+        autofocus: true,
+        decoration: InputDecoration(
+            labelText: 'Grams *',
+            hintText: 'eg. 100',
+            contentPadding: EdgeInsets.all(0.0)),
+        keyboardType: TextInputType.number,
+        inputFormatters: <TextInputFormatter>[
+          FilteringTextInputFormatter.digitsOnly
+        ],
+        onChanged: (value) {
+          try {
+            addFoodTrack.grams = int.parse(value);
+          } catch (e) {
+            addFoodTrack.grams = 0;
+          }
+          setState(() {
+            servingSize = double.tryParse(value) ?? 0;
+          });
+        });
   }
 
   Widget _showDatePicker() {
@@ -332,6 +337,7 @@ class _DayViewState extends State<DayViewScreen> {
                   fontFamily: 'Open Sans',
                   fontSize: 18.0,
                   fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onPrimary
                 )),
           ),
           IconButton(
@@ -361,9 +367,9 @@ class _DayViewState extends State<DayViewScreen> {
   }
 
   String _dateFormatter(DateTime tm) {
-    DateTime today = new DateTime.now();
-    Duration oneDay = new Duration(days: 1);
-    Duration twoDay = new Duration(days: 2);
+    DateTime today = DateTime.now();
+    Duration oneDay = Duration(days: 1);
+    Duration twoDay = Duration(days: 2);
     String month;
 
     switch (tm.month) {
@@ -422,10 +428,10 @@ class _DayViewState extends State<DayViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
         appBar: AppBar(
-            elevation: 0,
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(5.0),
+              preferredSize: const Size.fromHeight(0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -433,13 +439,14 @@ class _DayViewState extends State<DayViewScreen> {
                   _addFoodButton(),
                 ],
               ),
-            )),
+            ),
+        ),
         body: StreamProvider<List<FoodTrackTask>>.value(
           initialData: [],
-          value: new DatabaseService(
-              uid: "calorie-tracker-b7d17", currentDate: DateTime.now())
+          value: DatabaseService(
+              uid: "flutter-myfitexercisecompanion", currentDate: DateTime.now())
               .foodTracks,
-          child: new Column(children: <Widget>[
+          child: Column(children: <Widget>[
             _calorieCounter(),
             Expanded(
                 child: ListView(
@@ -457,7 +464,7 @@ class FoodTrackList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DateTime curDate =
-    new DateTime(datePicked.year, datePicked.month, datePicked.day);
+    DateTime(datePicked.year, datePicked.month, datePicked.day);
 
     final foodTracks = Provider.of<List<FoodTrackTask>>(context);
 
@@ -493,8 +500,8 @@ class FoodTrackList extends StatelessWidget {
 
 class FoodTrackTile extends StatelessWidget {
   final FoodTrackTask foodTrackEntry;
-  DatabaseService databaseService = new DatabaseService(
-      uid: "calorie-tracker-b7d17", currentDate: DateTime.now());
+  DatabaseService databaseService = DatabaseService(
+      uid: "flutter-myfitexercisecompanion", currentDate: DateTime.now());
 
   FoodTrackTile({required this.foodTrackEntry});
 
@@ -565,7 +572,6 @@ class FoodTrackTile extends StatelessWidget {
                   Text(' ' + foodTrackEntry.carbs.toStringAsFixed(1) + 'g    ',
                       style: TextStyle(
                         fontSize: 12.0,
-                        color: Colors.white,
                         fontFamily: 'Open Sans',
                         fontWeight: FontWeight.w400,
                       )),
@@ -581,7 +587,6 @@ class FoodTrackTile extends StatelessWidget {
                       ' ' + foodTrackEntry.protein.toStringAsFixed(1) + 'g    ',
                       style: TextStyle(
                         fontSize: 12.0,
-                        color: Colors.white,
                         fontFamily: 'Open Sans',
                         fontWeight: FontWeight.w400,
                       )),
@@ -596,7 +601,6 @@ class FoodTrackTile extends StatelessWidget {
                   Text(' ' + foodTrackEntry.fat.toStringAsFixed(1) + 'g',
                       style: TextStyle(
                         fontSize: 12.0,
-                        color: Colors.white,
                         fontFamily: 'Open Sans',
                         fontWeight: FontWeight.w400,
                       )),
@@ -605,7 +609,6 @@ class FoodTrackTile extends StatelessWidget {
               Text(foodTrackEntry.grams.toString() + 'g',
                   style: TextStyle(
                     fontSize: 12.0,
-                    color: Colors.white,
                     fontFamily: 'Open Sans',
                     fontWeight: FontWeight.w300,
                   )),
@@ -639,7 +642,6 @@ class FoodTrackTile extends StatelessWidget {
         Text('% of total',
             style: TextStyle(
               fontSize: 14.0,
-              color: Colors.white,
               fontFamily: 'Open Sans',
               fontWeight: FontWeight.w400,
             )),

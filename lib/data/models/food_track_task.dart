@@ -13,6 +13,7 @@ class FoodTrackTask {
   String mealTime;
   DateTime createdOn;
   num grams;
+  String email;
 
   FoodTrackTask({
     required this.food_name,
@@ -23,6 +24,7 @@ class FoodTrackTask {
     required this.mealTime,
     required this.createdOn,
     required this.grams,
+    required this.email,
     String? id,
   }) : this.id = id ?? Uuid().v4();
 
@@ -34,6 +36,7 @@ class FoodTrackTask {
       protein: snap.child('protein').value as int,
       mealTime: snap.child('mealTime').value as String,
       grams: snap.child('grams').value as int,
+      email: snap.child('email').value as String,
       createdOn: snap.child('createdOn').value as DateTime);
 
   Map<String, dynamic> toMap() {
@@ -45,7 +48,8 @@ class FoodTrackTask {
       'protein': protein,
       'fat': fat,
       'grams': grams,
-      'createdOn': createdOn
+      'createdOn': createdOn,
+      'email': email
     };
   }
 
@@ -58,7 +62,8 @@ class FoodTrackTask {
         carbs = json['carbs'],
         fat = json['fat'],
         protein = json['protein'],
-        grams = json['grams'];
+        grams = json['grams'],
+        email = json['email'];
 
   Map<dynamic, dynamic> toJson() => <dynamic, dynamic>{
     'id': id,
@@ -70,5 +75,6 @@ class FoodTrackTask {
     'fat': fat,
     'protein': protein,
     'grams': grams,
+    'email': email,
   };
 }

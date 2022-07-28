@@ -1,9 +1,5 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../data/models/food_track_entry.dart';
@@ -16,8 +12,8 @@ class DateTimeChart extends StatefulWidget {
 
 class _DateTimeChart extends State<DateTimeChart> {
   List<charts.Series<FoodTrackEntry, DateTime>>? resultChartData = null;
-  DatabaseService databaseService = new DatabaseService(
-      uid: "calorie-tracker-b7d17", currentDate: DateTime.now());
+  DatabaseService databaseService = DatabaseService(
+      uid: "flutter-myfitexercisecompanion", currentDate: DateTime.now());
 
   @override
   void initState() {
@@ -41,7 +37,7 @@ class _DateTimeChart extends State<DateTimeChart> {
   }
 
   void populateChartWithEntries(List<FoodTrackEntry> foodTrackEntries) async {
-    Map<String, int> caloriesByDateMap = new Map();
+    Map<String, int> caloriesByDateMap = Map();
     if (foodTrackEntries != null) {
       var dateFormat = DateFormat("yyyy-MM-dd");
       for (var foodEntry in foodTrackEntries) {
@@ -59,7 +55,7 @@ class _DateTimeChart extends State<DateTimeChart> {
       for (var foodEntry in caloriesByDateMap.keys) {
         DateTime entryDateTime = DateTime.parse(foodEntry);
         caloriesByDateTimeMap.add(
-            new FoodTrackEntry(entryDateTime, caloriesByDateMap[foodEntry]!));
+            FoodTrackEntry(entryDateTime, caloriesByDateMap[foodEntry]!));
       }
 
       caloriesByDateTimeMap.sort((a, b) {
@@ -70,7 +66,7 @@ class _DateTimeChart extends State<DateTimeChart> {
       });
       setState(() {
         resultChartData = [
-          new charts.Series<FoodTrackEntry, DateTime>(
+          charts.Series<FoodTrackEntry, DateTime>(
               id: "Food Track Entries",
               colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
               domainFn: (FoodTrackEntry foodTrackEntry, _) =>
@@ -89,20 +85,22 @@ class _DateTimeChart extends State<DateTimeChart> {
   Widget build(BuildContext context) {
     if (resultChartData != null) {
       return Scaffold(
-        body: new Center(
-            child: new Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text("Caloric Intake By Date Chart"),
-                new Padding(
-                    padding: new EdgeInsets.all(32.0),
-                    child: new SizedBox(
-                      height: 500.0,
-                      child:
-                      charts.TimeSeriesChart(resultChartData!, animate: true),
-                    ))
-              ],
-            )),
+        body: SingleChildScrollView(
+          child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text("Caloric Intake By Date Chart"),
+                  Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: SizedBox(
+                        height: 500.0,
+                        child:
+                        charts.TimeSeriesChart(resultChartData!, animate: true),
+                      ))
+                ],
+              )),
+        ),
       );
     } else {
       return CircularProgressIndicator();

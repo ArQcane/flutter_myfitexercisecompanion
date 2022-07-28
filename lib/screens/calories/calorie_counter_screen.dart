@@ -9,20 +9,6 @@ class CalorieCounterScreen extends StatefulWidget {
   const CalorieCounterScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: FlatButton(
-          onPressed: () {
-            // Navigate back to homepage
-          },
-          child: const Text('Go Back!'),
-        ),
-      ),
-    );
-  }
-
-  @override
   State<CalorieCounterScreen> createState() => _CalorieCounterScreenState();
 }
 
@@ -44,36 +30,31 @@ class _CalorieCounterScreenState extends State<CalorieCounterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ButtonStyle buttonStyle =
-    ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20));
 
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Flutter Calorie Tracker App",
-            style: TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+          appBar: AppBar(
+            bottom: TabBar(
+              tabs: [
+                Tab(text: "Day View",),
+                Tab(text: "History",),
+              ],
+            ),
+            centerTitle: true,
+            title: const Text(
+              "Calorie Tracker",
+              style: TextStyle(
+                  color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-        body: Column(
-          children: <Widget>[
-            const ListTile(
-                leading: Icon(Icons.food_bank),
-                title: Text("Welcome To Calorie Tracker App!",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold))),
-            ElevatedButton(
-                onPressed: () {
-                  onClickDayViewScreenButton(context);
-                },
-                child: const Text("Day View Screen")),
-            ElevatedButton(
-                onPressed: () {
-                  onClickHistoryScreenButton(context);
-                },
-                child: const Text("History Screen")),
-          ],
-        ));
+          body: TabBarView(
+            children: [
+              Center(child: DayViewScreen(),),
+              Center(child: HistoryScreen(),)
+            ],
+          )),
+    );
   }
 }
 class MyBehavior extends ScrollBehavior {

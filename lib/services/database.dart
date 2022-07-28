@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../data/models/food_track_task.dart';
+import '../data/repositories/auth_repository.dart';
 
 class DatabaseService {
   final String uid;
@@ -26,7 +27,8 @@ class DatabaseService {
       'protein': food.protein,
       'mealTime': food.mealTime,
       'createdOn': food.createdOn,
-      'grams': food.grams
+      'grams': food.grams,
+      'email': AuthRepository().getCurrentUser()!.email,
     });
   }
 
@@ -49,16 +51,17 @@ class DatabaseService {
         mealTime: doc['mealTime'] ?? "",
         createdOn: doc['createdOn'].toDate() ?? DateTime.now(),
         grams: doc['grams'] ?? 0,
+        email: doc['email'] ?? AuthRepository().getCurrentUser()!.email,
       );
     }).toList();
   }
 
   Stream<List<FoodTrackTask>> get foodTracks {
-    return foodTrackCollection.snapshots().map(_scanListFromSnapshot);
+    return foodTrackCollection.where("email", isEqualTo: AuthRepository().getCurrentUser()!.email).snapshots().map(_scanListFromSnapshot);
   }
 
   Future<List<dynamic>> getAllFoodTrackData() async {
-    QuerySnapshot snapshot = await foodTrackCollection.get();
+    QuerySnapshot snapshot = await foodTrackCollection.where('email', isEqualTo: AuthRepository().getCurrentUser()!.email).get();
     List<dynamic> result = snapshot.docs.map((doc) => doc.data()).toList();
     return result;
   }
