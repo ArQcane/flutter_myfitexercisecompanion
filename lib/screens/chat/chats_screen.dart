@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/Others/global.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/screens/chat/chats_individual_screen.dart';
 import 'package:flutter_myfitexercisecompanion/screens/chat/search_user_screen.dart';
@@ -58,6 +59,8 @@ class _ChatsScreenState extends State<ChatsScreen> {
                   itemCount: snapshot.data.docs.length,
                   itemBuilder: (context, index) {
                     var friendEmail = snapshot.data.docs[index].id;
+                    friendId.add(snapshot.data.docs[index].id);
+                    print("working: $friendId");
                     var lastMsg = snapshot.data.docs[index]['last_msg'];
                     return FutureBuilder(
                       future: FirebaseFirestore.instance

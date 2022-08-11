@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
@@ -133,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               shrinkWrap: true,
               children: snapshot.data!.map((RunModel runModel) {
-                return _getListItem(
+                return _listItem(
                   context,
                   runModel,
                 );
@@ -212,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _getListItem(BuildContext context, RunModel runModel) {
+  Widget _listItem(BuildContext context, RunModel runModel) {
     String formattedDate = DateFormat('yyyy-MM-dd – kk:mm')
         .format(DateTime.fromMillisecondsSinceEpoch(runModel.timestamp));
     String? newRunTitle;
@@ -221,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(10),
       child: Slidable(
         key: ValueKey(runModel.id),
-        endActionPane: _getActionPane(runModel),
+        endActionPane: _getDeletePane(runModel),
         child: GestureDetector(
           onTap: () {
             print("runtitle value:${runModel.runTitle}");
@@ -345,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         Container(
-                          child: _getDetails(runModel),
+                          child: _runDetails(runModel),
                         ),
                       ],
                     ),
@@ -359,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ActionPane _getActionPane(RunModel runModel) {
+  ActionPane _getDeletePane(RunModel runModel) {
     return ActionPane(
       motion: const ScrollMotion(),
       dismissible: DismissiblePane(
@@ -471,13 +469,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _getDetails(RunModel runModel) {
+  Widget _runDetails(RunModel runModel) {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _getValue(
+          _runValues(
             context,
             (runModel.distanceRanInMetres > 1000
                 ? runModel.distanceRanInMetres / 1000
@@ -485,19 +483,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 .toString(),
             runModel.distanceRanInMetres > 1000 ? 'Kilometres' : 'Metres',
           ),
-          _getValue(
+          _runValues(
             context,
-            StopWatchTimer.getDisplayTimeHours(
-                runModel.timeTakenInMilliseconds) +
-                ":" +
-                StopWatchTimer.getDisplayTimeMinute(
-                    runModel.timeTakenInMilliseconds) +
-                ":" +
-                StopWatchTimer.getDisplayTimeSecond(
-                    runModel.timeTakenInMilliseconds),
+            "${StopWatchTimer.getDisplayTimeHours(
+                runModel.timeTakenInMilliseconds)}:${StopWatchTimer.getDisplayTimeMinute(
+                    runModel.timeTakenInMilliseconds)}:${StopWatchTimer.getDisplayTimeSecond(
+                    runModel.timeTakenInMilliseconds)}",
             'Time Taken',
           ),
-          _getValue(
+          _runValues(
             context,
             runModel.averageSpeed.toStringAsFixed(2),
             'KM/h',
@@ -507,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _getValue(BuildContext context, String value, String unit) {
+  Widget _runValues(BuildContext context, String value, String unit) {
     return SizedBox(
       width: 330 / 3,
       child: Column(

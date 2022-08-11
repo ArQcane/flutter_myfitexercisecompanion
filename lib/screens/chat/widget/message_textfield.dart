@@ -37,6 +37,7 @@ class _MessageTextFieldState extends State<MessageTextField> {
         children: [
           Expanded(child: TextField(
             controller: _controller,
+            style: const TextStyle(color: Colors.black),
             decoration: InputDecoration(
                 labelStyle: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
@@ -54,7 +55,7 @@ class _MessageTextFieldState extends State<MessageTextField> {
           )),
           SizedBox(width: 20,),
           GestureDetector(
-            onTap: ()async{
+            onTap: () async {
               String message = _controller.text;
               _controller.clear();
               await FirebaseFirestore.instance.collection('users').doc(AuthRepository().getCurrentUser()!.email).collection('messages').doc(widget.friendId).collection('chats').add({

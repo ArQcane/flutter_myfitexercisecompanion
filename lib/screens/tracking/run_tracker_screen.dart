@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/run_model.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/run_repository.dart';
+import 'package:flutter_myfitexercisecompanion/screens/home/home_screen.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/bottom_nav_bar.dart';
 import 'package:flutter_myfitexercisecompanion/widgets/loading_circle.dart';
 import 'package:geolocator/geolocator.dart';
@@ -70,7 +71,6 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
   void dispose() async {
     super.dispose();
     await _stopWatchTimer.dispose(); // Need to call dispose function.
-    _mapController!.dispose();
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -190,13 +190,13 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
     Brightness brightness = Brightness.light,
   ]) async {
     await Future.delayed(
-      const Duration(milliseconds: 500),
+      const Duration(milliseconds: 1000),
     );
     _mapController?.setMapStyle(
       brightness == Brightness.light ? _lightMapStyle : _darkMapStyle,
     );
     await Future.delayed(
-      const Duration(milliseconds: 500),
+      const Duration(milliseconds: 1000),
     );
     return _mapController?.takeSnapshot();
   }
@@ -225,6 +225,8 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
       String mapScreenshotRef = "screenshot(map)/${const Uuid().v4()}";
       String darkMapScreenshotRef = "screenshot(map)/${const Uuid().v4()}";
 
+      _configureMapType(context);
+
       int dateTimeStamp = DateTime.now().millisecondsSinceEpoch;
 
       RunModel runModel = RunModel(
@@ -245,13 +247,25 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
         return SnackbarUtils(context: context)
             .createSnackbar('Unknown Error has occurred');
       }
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => BottomNavBar()));
+
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+        null,
+      );
+
       setState(() {
         isTracking = false;
         isFirstTimeTracking = true;
         takingMapScreenshot = false;
       });
+
+      await Future.delayed(
+        const Duration(seconds: 1),
+        null,
+      );
+
+      Navigator.pushReplacementNamed(
+          context, BottomNavBar.routeName);
     }
   }
 
@@ -364,7 +378,7 @@ class _RunTrackerScreenState extends State<RunTrackerScreen> {
               height: double.infinity,
               child: Material(
                 elevation: 10,
-                color: Theme.of(context).colorScheme.surface,
+                color: Theme.of(context).colorScheme.background,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

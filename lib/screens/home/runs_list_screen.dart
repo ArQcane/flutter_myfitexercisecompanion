@@ -95,27 +95,33 @@ class _RunsListScreen extends State<RunsListScreen> {
           alignment: Alignment.centerRight,
           child: SizedBox(
             width: 250,
-            child: DropdownButtonFormField<String>(
-              icon: Icon(Icons.sort),
-              decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                          width: 3,
-                          color: Theme.of(context).colorScheme.primary))),
-              value: selectedItem,
-              items: items
-                  .map(
-                    (item) => DropdownMenuItem<String>(
-                      child: Text(
-                        item,
-                        style: TextStyle(fontSize: 24),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12)
+              ),
+              child: DropdownButtonFormField<String>(
+                icon: Icon(Icons.sort),
+                decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            width: 3,
+                            color: Theme.of(context).colorScheme.primary))),
+                value: selectedItem,
+                items: items
+                    .map(
+                      (item) => DropdownMenuItem<String>(
+                        child: Text(
+                          item,
+                          style: TextStyle(fontSize: 24),
+                        ),
+                        value: item,
                       ),
-                      value: item,
-                    ),
-                  )
-                  .toList(),
-              onChanged: (item) => setState(() => selectedItem = item),
+                    )
+                    .toList(),
+                onChanged: (item) => setState(() => selectedItem = item),
+              ),
             ),
           ),
         ),
@@ -250,7 +256,12 @@ class _RunsListScreen extends State<RunsListScreen> {
                           child: _getImage(runModel),
                         ),
                         Container(
-                          color: Theme.of(context).colorScheme.surfaceVariant,
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.background,
+                              borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(12),
+                                bottomLeft: Radius.circular(12),
+                              )),
                           child: _getDetails(runModel),
                         ),
                       ],

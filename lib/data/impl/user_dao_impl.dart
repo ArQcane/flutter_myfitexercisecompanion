@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_myfitexercisecompanion/Others/global.dart';
 import 'package:flutter_myfitexercisecompanion/data/dao/user_dao.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:uuid/uuid.dart';
@@ -25,21 +26,26 @@ class UserDaoImpl implements UserDao {
     try {
       RunRepository.instance()
           .deleteAllRunsOnAcc(_firebaseAuth.currentUser!.email!);
-      // QuerySnapshot<Map<String, dynamic>> users = await _firestore
-      //     .collection('users')
-      //     .where('email', isEqualTo: _firebaseAuth.currentUser?.email)
-      //     .get();
-      // WriteBatch batch = _firestore.batch();
-      // for (var doc in users.docs) {
-      //   batch.delete(doc.reference);
-      // }
-      // await batch.commit();
       WriteBatch batch = _firestore.batch();
-      await _firestore.collection('users').doc(_firebaseAuth.currentUser!.email!).get().then((querySnapshot) => {
-        batch.delete(querySnapshot.reference)
-          });
+      for(var friends in friendId){
+        await _firestore.collection('users').doc(friends).collection('messages').doc(_firebaseAuth.currentUser!.email!).collection('chats').get().then((querySnapshot) => {
+          querySnapshot.docs.forEach((doc) => {batch.delete(doc.reference)})
+        });
+        await _firestore.collection('users').doc(friends).collection('messages').doc(_firebaseAuth.currentUser!.email!).get().then((querySnapshot) => {
+          batch.delete(querySnapshot.reference)
+        });
+        await _firestore.collection('users').doc(_firebaseAuth.currentUser!.email!).collection('messages').doc(friends).collection('chats').get().then((querySnapshot) => {
+          querySnapshot.docs.forEach((doc) => {batch.delete(doc.reference)})
+        });
+        await _firestore.collection('users').doc(_firebaseAuth.currentUser!.email!).collection('messages').doc(friends).get().then((querySnapshot) => {
+          batch.delete(querySnapshot.reference)
+        });
+      }
       await _firestore.collection('users').doc(_firebaseAuth.currentUser!.email!).collection('messages').get().then((querySnapshot) => {
         querySnapshot.docs.forEach((doc) => {batch.delete(doc.reference)})
+      });
+      await _firestore.collection('users').doc(_firebaseAuth.currentUser!.email!).get().then((querySnapshot) => {
+        batch.delete(querySnapshot.reference)
       });
       await _firestore.collection('foodTracks').where('email', isEqualTo: _firebaseAuth.currentUser!.email!).get().then((querySnapshot) => {
         querySnapshot.docs.forEach((doc) => {batch.delete(doc.reference)})

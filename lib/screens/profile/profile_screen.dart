@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_myfitexercisecompanion/Others/global.dart';
 import 'package:flutter_myfitexercisecompanion/data/models/user_model.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository.dart';
 import 'package:flutter_myfitexercisecompanion/data/repositories/user_repository.dart';
@@ -14,16 +16,20 @@ import 'edit_profile_screen.dart';
 class ProfileScreen extends StatefulWidget {
   static String routeName = "/profile";
 
+
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
   FirestoreService fsService = FirestoreService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final passwordController = TextEditingController();
 
   String? password;
+
+  bool isLoading = false;
 
   UserDetail? _userDetail;
   String? username = "";
@@ -33,10 +39,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   deleteAccount() async {
     try {
+      Navigator.pop(context);
       await AuthRepository().login(
         AuthRepository().getCurrentUser()!.email!,
         password,
       );
+      setState((){
+        isLoading = true;
+      });
       bool deleteImageResults =
           await UserRepository.instance().deleteUserImage();
       bool deleteUserResults = await UserRepository.instance().deleteUser();
@@ -46,6 +56,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
       await AuthRepository().getCurrentUser()?.delete();
+      setState((){
+        isLoading = false;
+      });
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -98,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (_) => MainScreen()));
           }
-          return Scaffold(
+          return !isLoading ? Scaffold(
             appBar: AppBar(
               title: Text("Profile",
                   style: TextStyle(fontWeight: FontWeight.bold)),
@@ -213,7 +226,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-          );
+          ) : CircularProgressIndicator();
         });
   }
 }

@@ -22,6 +22,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Future.delayed(Duration(milliseconds: 1000));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         bottomNavigationBar: Container(

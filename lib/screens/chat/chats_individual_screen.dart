@@ -27,6 +27,8 @@ class ChatsIndividualScreen extends StatefulWidget {
 }
 
 class _ChatsIndividualScreenState extends State<ChatsIndividualScreen> {
+
+
   Color get _baseColor {
     return Theme
         .of(context)
