@@ -4,10 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/models/food_track_task.dart';
 import '../data/repositories/auth_repository.dart';
 
-class DatabaseService {
+class FoodDatabaseService {
   final String uid;
   final DateTime currentDate;
-  DatabaseService({required this.uid, required this.currentDate});
+  FoodDatabaseService({required this.uid, required this.currentDate});
 
   final DateTime today =
   DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);

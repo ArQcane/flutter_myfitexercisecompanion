@@ -2,8 +2,8 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../data/models/food_track_entry.dart';
-import '../services/database.dart';
+import '../../../data/models/food_track_entry.dart';
+import '../../../services/food_database.dart';
 
 class DateTimeChart extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class DateTimeChart extends StatefulWidget {
 
 class _DateTimeChart extends State<DateTimeChart> {
   List<charts.Series<FoodTrackEntry, DateTime>>? resultChartData = null;
-  DatabaseService databaseService = DatabaseService(
+  FoodDatabaseService databaseService = FoodDatabaseService(
       uid: "flutter-myfitexercisecompanion", currentDate: DateTime.now());
 
   @override

@@ -4,13 +4,11 @@ import 'package:flutter_myfitexercisecompanion/data/repositories/auth_repository
 
 import 'package:provider/provider.dart';
 
-import 'package:openfoodfacts/model/Product.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
 import 'dart:math';
 
 import '../../../Others/constants.dart';
 import '../../../data/models/food_track_task.dart';
-import '../../../services/database.dart';
+import '../../../services/food_database.dart';
 import '../../../utils/theme_colors.dart';
 import 'calorie_stats.dart';
 
@@ -34,7 +32,7 @@ class _DayViewState extends State<DayViewScreen> {
   Color _leftArrowColor = Color(0xffC1C1C1);
   final _addFoodKey = GlobalKey<FormState>();
 
-  DatabaseService databaseService = DatabaseService(
+  FoodDatabaseService databaseService = FoodDatabaseService(
       uid: "calorie-tracker-b7d17", currentDate: DateTime.now());
 
   late FoodTrackTask addFoodTrack;
@@ -443,7 +441,7 @@ class _DayViewState extends State<DayViewScreen> {
         ),
         body: StreamProvider<List<FoodTrackTask>>.value(
           initialData: [],
-          value: DatabaseService(
+          value: FoodDatabaseService(
               uid: "flutter-myfitexercisecompanion", currentDate: DateTime.now())
               .foodTracks,
           child: Column(children: <Widget>[
@@ -500,7 +498,7 @@ class FoodTrackList extends StatelessWidget {
 
 class FoodTrackTile extends StatelessWidget {
   final FoodTrackTask foodTrackEntry;
-  DatabaseService databaseService = DatabaseService(
+  FoodDatabaseService databaseService = FoodDatabaseService(
       uid: "flutter-myfitexercisecompanion", currentDate: DateTime.now());
 
   FoodTrackTile({required this.foodTrackEntry});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/datetime_series_chart.dart';
+import '../utils/datetime_series_chart.dart';
 
 class HistoryScreen extends StatefulWidget {
   HistoryScreen();
